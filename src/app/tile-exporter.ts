@@ -1,24 +1,26 @@
-import { ImageGrid, PageSpec, TileExporter as TileExporterLib, type CountClaz } from "@thegraid/easeljs-lib";
+import { PageSpec, TileExporter as TileExporterLib, type CountClaz, type GridSpec } from "@thegraid/easeljs-lib";
+import { CubeCard } from "./cube-card";
 
 // end imports
 
 export class TileExporter extends TileExporterLib {
 
+  // x0 = pixel margin + bleed + width/2
+  static euroPoker: GridSpec = {
+    width: 3600, height: 5400, nrow: 6, ncol: 3, cardw: 1040, cardh: 734, double: false,
+    x0: 158 + 30 + 1040/2, y0: 320 + 30 + 734/2, delx: 1122.5, dely: 803, bleed: 30,
+  }
+
   override makeImagePages() {
     // [...[count, claz, ...constructorArgs]]
-    const cardSingle_1_75_back = [
+    const cardSingle_euro_back = [
     ] as CountClaz[];
-    const cardSingle_1_75_base = [
-    ] as CountClaz[];
-    const cardSingle_1_75_hand = [
+    const cardSingle_euro_base = [
+      ...CubeCard.allCards(),
     ] as CountClaz[];
 
     const pageSpecs: PageSpec[] = [];
-    // this.clazToTemplate(labelCols, TrackLabel.gridSpec, pageSpecs)
-    // this.clazToTemplate(cardSingle_3_5_track, ImageGrid.cardSingle_3_5, pageSpecs);
-    // this.clazToTemplate(cardSingle_1_75_back, ImageGrid.cardSingle_1_75, pageSpecs);
-    this.clazToTemplate(cardSingle_1_75_base, ImageGrid.cardSingle_1_75, pageSpecs);
-    // this.clazToTemplate(cardSingle_1_75_hand, ImageGrid.cardSingle_1_75, pageSpecs);
+    this.clazToTemplate(cardSingle_euro_base, TileExporter.euroPoker, pageSpecs);
     return pageSpecs;
   }
 

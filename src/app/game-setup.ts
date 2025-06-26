@@ -1,5 +1,5 @@
-import { C, stime, type Constructor } from '@thegraid/common-lib';
-import { AliasLoader, GameSetup as GameSetupLib, Hex2, HexMap, MapCont, Scenario as Scenario0, Table, TP, TP as TPLib, type GamePlay, type Hex, type ScenarioParser, type SetupElt } from '@thegraid/hexlib';
+import { stime, type Constructor } from '@thegraid/common-lib';
+import { AliasLoader, GameSetup as GameSetupLib, Hex2, HexMap, MapCont, Scenario as Scenario0, Table, Tile, TP, type Hex } from '@thegraid/hexlib';
 // import { CardShape } from './card-shape';
 
 import { TileExporter } from './tile-exporter';
@@ -36,7 +36,8 @@ class NullGameSetup extends GameSetupLib {
   }
 
   override startup(scenario: Scenario): void {
-    super.startup(scenario)
+    super.startup(scenario);
+    Tile.gamePlay = this.gamePlay;
   }
 
   override makeHexMap(
@@ -60,8 +61,8 @@ export class GameSetup extends NullGameSetup {
 }
 
 class NullTable extends Table {
-  override makePerPlayer(): void {
-  }
+  // override makePerPlayer(): void {
+  // }
   override setupUndoButtons(): void {
   }
   override makeGUIs(scale?: number, cx = -154, cy = 210, dy?: number): void {
