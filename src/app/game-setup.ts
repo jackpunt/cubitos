@@ -3,6 +3,7 @@ import { AliasLoader, GameSetup as GameSetupLib, Hex2, HexMap, MapCont, Scenario
 // import { CardShape } from './card-shape';
 
 import { TileExporter } from './tile-exporter';
+import { CubeCard } from './cube-card';
 
 /** returns an Array filled with n Elements: [0 .. n-1] or [dn .. dn+n-1] or [f(0) .. f(n-1)] */
 export function arrayN(n: number, nf: number | ((i: number) => number) = 0) {
@@ -31,15 +32,20 @@ class NullGameSetup extends GameSetupLib {
   }
 
   override loadImagesThenStartup() {
-    AliasLoader.loader.fnames = [];
+    AliasLoader.loader.fnames = Object.keys(CubeCard.cmap);
     super.loadImagesThenStartup();    // loader.loadImages(() => this.startup(qParams));
   }
 
   override startup(scenario: Scenario): void {
     super.startup(scenario);
     Tile.gamePlay = this.gamePlay;
+    this.clickButton('makePage');
   }
 
+  clickButton(id: string) {
+    const anchor = document.getElementById(id) as HTMLAnchorElement;
+    anchor?.onclick?.call(window, {} as any); // no MouseEvent, its not used
+  }
   override makeHexMap(
     hexMC: Constructor<HexMap<Hex>> = HexMap,
     hexC: Constructor<Hex> = Hex2, // (radius, addToMapCont, hexC, Aname)
