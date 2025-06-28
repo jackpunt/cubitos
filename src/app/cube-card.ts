@@ -1,9 +1,10 @@
 import { C, F } from "@thegraid/common-lib";
-import { CenterText, CircleShape, NamedContainer, TextInRect, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
-import { Text } from "@thegraid/easeljs-module";
+import { CenterText, CircleShape, NamedContainer, RectWithDisp, TextInRect, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
+import { Text, type DisplayObject } from "@thegraid/easeljs-module";
 import { AliasLoader, Tile } from "@thegraid/hexlib";
 import { CardShape } from "./card-shape";
 import { TileExporter } from "./tile-exporter";
+import { TextTweaks, type TWEAKS } from "./text-tweaks";
 
 type CARD = { Aname: string, color: string, cost: number, now?: string, active?: string, run?: string, runp?: string };
 function rgbaToName(v: Uint8ClampedArray, alpha?: number|string) {
@@ -71,6 +72,8 @@ export class CubeCard extends Tile  {
   run = '';
   runp = '';
   image?: ImageBitmap;
+  tweaker: CubeTweaker;
+  gridSpec = TileExporter.euroPoker;
 
   constructor(desc: CARD) {
     super(desc.Aname);
@@ -80,6 +83,7 @@ export class CubeCard extends Tile  {
     this.now = desc2.now;
     this.active = desc2.active;
     this.run = desc2.run;
+    this.tweaker = new CubeTweaker(this);
     this.addComponents();
   }
 
@@ -96,8 +100,7 @@ export class CubeCard extends Tile  {
   // [now], [active], [power-run], [run]
   addComponents() {
     //
-    const gridSpec = TileExporter.euroPoker;
-    const h = gridSpec.cardh!;
+    const h = this.gridSpec.cardh!;
     const bmImage = AliasLoader.loader.getBitmap(this.color, h); // scaled to fit cardh
     const bmBounds = bmImage.getBounds();
     const bmw = bmBounds?.width ?? 345;
@@ -114,8 +117,8 @@ export class CubeCard extends Tile  {
     nameText.y = y0;
     nameText.x = x0;
     const coin = this.makeCoin(x + width - 100, y0);
-    this.addChild(nameText, coin); // titleName, not Tile.nameText
     this.addBoxes(y0 + nameText.getMeasuredLineHeight());
+    this.addChild(nameText, coin); // titleName, not Tile.nameText
     // this.reCache(); // do not reCache: extends bouds to whole bmImage!
     this.paint(this.color)
   }
@@ -135,15 +138,26 @@ export class CubeCard extends Tile  {
     const lines = keys.filter(l => this[l]).map(l => ({ key: l, txt: this[l] })) as Record<string, string>[];
     lines.map(txtr => {
       const { key, txt } = txtr;
-      const tbox = this.makeTitleBox(key.toUpperCase(), y0); // TextInRect
-      this.addChild(tbox);
-      y0 += tbox.getBounds().height;
       const cbox = this.makeContentBox(txt, y0);
-      this.addChild(cbox);
-      y0 += cbox.getBounds().height + ygap;
+      const ch = cbox.getBounds().height;
+      const tbox = this.makeTitleBox(key.toUpperCase(), y0, ch); // TextInRect
+      cbox.y += tbox.getBounds().height - ch + 4;
+      this.addChild(tbox, cbox);
+      y0 += tbox.getBounds().height + ygap;
       return tbox;
     });
   }
+
+  /** darker, one-line, up case: NOW, ACTIVE, RUN, POWER-RUN */
+  makeTitleBox(title = 'NOW', y0 = 0, below = 0 ): DisplayObject {
+    return this.makeBox(title, y0, below, .6, CubeCard.titleFont, .45);
+  }
+
+  /** explanatory text --> dObj with Bounds */
+  makeContentBox(text = 'do this...', y0 = 0): DisplayObject {
+    return this.makeBox(text, y0, 0, .8, CubeCard.textFont, .5);
+  }
+
   darken(color: string, dc = .8) {
     const rgb = C.nameToRgba(color);
     const darka = rgb.map(cv => Math.floor(cv * dc));
@@ -151,29 +165,54 @@ export class CubeCard extends Tile  {
     return rgba;
   }
 
-  /** darker, one-line, up case: NOW, ACTIVE, RUN, POWER-RUN */
-  makeTitleBox(title = 'NOW', y = 0 ) {
-    const bgColor = this.darken(this.mcolor, .8);
-    const tText = new Text(`${title}              `, CubeCard.titleFont, this.tcolor);
-    const box = new TextInRect(tText, { bgColor })
-    box.y = y;
-    box.x = this.x0;
-    return box;
-  }
-
-  /** explanatory text */
-  makeContentBox(text = 'do this...', y0 = 0) {
-    const bgColor = this.darken(this.mcolor, .9);
-    const cText = new Text(text, CubeCard.textFont, this.tcolor);
-    const box = new TextInRect(cText, { bgColor })
+  makeBox(text = 'NOW', y0 = 0, below = 0, shade = .8, fontStr: string, dw = .45): DisplayObject {
+    const bgColor = this.darken(this.mcolor, shade);
+    const tText = new Text(text, fontStr, this.tcolor);
+    const glyphRE = this.tweaker.glyphRE; // red: $! $X
+    const cont = this.tweaker.cont = new NamedContainer('aBox');
+    const tweaks = { glyphRE, align: 'left', baseline: 'top' } as TWEAKS;
+    this.tweaker.setTextTweaks(tText, fontStr, undefined, tweaks);
+      const tb = cont.getBounds();
+      const tw = Math.max(tb.width, this.gridSpec.cardw! * dw);
+      cont.setBounds(tb.x, tb.y, tw, tb.height + below);
+    const box = new RectWithDisp(cont, { bgColor, corner: 8 });
     box.y = y0;
-    box.x = this.x0 + 30;
+    box.x = this.x0;
     return box;
   }
 
   override paint(colorn?: string, force?: boolean): void {
     super.paint(this.mcolor, force);
     return;
+  }
+}
+
+class CubeTweaker extends TextTweaks {
+  /**
+   * - $= Cube Icon
+   * - $f Foot Icon
+   * - $$ Coin Icon
+   * - $# Credit Icon
+   * - $C Cat face?
+   * - $F Flag
+   * - $r Roll die
+   * - $! power die
+   * - $X Swords
+   */
+  glyphRE = /\$[=f$#CFr!X]/g; //
+
+  /**
+   *
+   * @param fragt
+   * @param trigger
+   * @param tx
+   * @param ty
+   * @param lineh
+   * @returns
+   */
+  override setGlyph(fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight): number {
+
+    return tx;
   }
 }
 
