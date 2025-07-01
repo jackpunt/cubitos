@@ -32,7 +32,7 @@ class NullGameSetup extends GameSetupLib {
   }
 
   override loadImagesThenStartup() {
-    AliasLoader.loader.fnames = Object.keys(CubeCard.cmap);
+    AliasLoader.loader.fnames = CubeCard.fnames;
     super.loadImagesThenStartup();    // loader.loadImages(() => this.startup(qParams));
   }
 

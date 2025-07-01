@@ -16,33 +16,35 @@ export class CubeCard extends Tile  {
   static coinFont = F.fontSpec(80, 'SF Compact Rounded', 'bold');
   static titleFont = F.fontSpec(36, 'SF Compact Rounded');
   static textFont = F.fontSpec(36, 'SF Compact Rounded');
-
+  static get fnames() {
+    return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
+  }
   static cards: CARD[] = [
-    {Aname: 'Card Name', cost: 1, color: 'red', now: '', run: ''},
-    {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: 'blue', now: '', run: ''},
     {Aname: 'Card Name', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 grey die from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the die you selected'},
-    {Aname: 'Card Name', cost: 8, color: 'orange', now: 'Gain 1 Move per active grey die, \nuse them immediately', active: '', run: 'If you have > 5 active grey dice,\nlose this'},
     {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'Gain 1 Credit per active grey die,\ngain 1 grey die', active: '', run: 'If you have > 5 active grey dice,\nlose this'},
-    {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-grey die [not optional], \ngain feet = half the cost of that die'},
-    {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'If a green is active, lose it,\ngain 3 Move & 3 coin', run: 'gain a cube costing < that die'},
-    {Aname: 'Card Name', cost: 4, color: 'brown', now: '', run: 'You may lose a grey from Roll, \nif you do: gain a grey die and 1 Move'},
-    {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 Move per active grey die; \n-1 Move per active green die'},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-grey die [not optional], \nGain $f = half the cost of that die'},
+    // {Aname: 'Card Name', cost: 4, color: 'brown', now: '', run: 'You may lose a grey from Roll, \nIf you do: \ngain a grey die and 1 Move'},
+    // {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 Move per active grey die; \n-1 Move per active green die'},
+    // {Aname: 'Card Name', cost: 1, color: 'red', now: 'test text', run: ''},
+    // {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: ''},
+    // {Aname: 'Card\nName', cost: 1, color: 'blue', now: 'Gain 2 Feet', run: 'Lose a Grey die'},
+    // {Aname: 'Card\nName', cost: 8, color: 'orange', now: 'Gain 1 Move per active grey die, \nuse them immediately', active: '', run: 'If you have > 5 active grey dice,\nlose this'},
+    // {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'If a green is active, lose it,\ngain 3 Move & 3 coin', run: 'gain a cube costing < that die'},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
   ];
 
   get mcolor() {
     return CubeCard.cmap[this.color] ?? 'pink';
   }
   get tcolor() {
-    return (this.color == 'yellow' || this.color == 'white') ? 'DARKBLUE' : C.WHITE;
+    return (this.color == 'yellow') ? '#003300' : (this.color == 'white') ? 'DARKBLUE' : C.WHITE;
   }
 
   // todo: map from canonical names to print colors
@@ -55,7 +57,7 @@ export class CubeCard extends Tile  {
     blue: 'rgb(112, 153, 227)',
     purple:'rgb(128,39,188)',// '0x7e27bc',
     brown: 'rgb(192,134,50)',
-    white: 'rgb(240,240,240)',
+    white: 'rgb(198, 197, 205)',
   } as Record<string, string>;
 
   static allCards(): CountClaz[] {
@@ -101,23 +103,25 @@ export class CubeCard extends Tile  {
   addComponents() {
     //
     const h = this.gridSpec.cardh!;
-    const bmImage = AliasLoader.loader.getBitmap(this.color, h); // scaled to fit cardh
+    const bmImage = AliasLoader.loader.getBitmap(this.color, this.gridSpec.cardw!); // scaled to fit cardw
     const bmBounds = bmImage.getBounds();
-    const bmw = bmBounds?.width ?? 345;
+    const bmw = bmBounds?.width ?? 3160;
     const { x, y, height, width } = this.baseShape.getBounds();
-    const x0 = this.x0 = x + bmw;
-    bmImage.x = x0-bmw/2; // put image.width at x0
+    const x0 = this.x0 = x + width * .44;
     if (bmImage) {
+      bmImage.x += 0; // can fudge if you want to see the cropped bleed graphics
       this.addChild(bmImage);
     }
     //
-    const y0 = 0 - h * .36;
+    const y0 = 0 - h * .36; // for baseLine = 'middle'
     const nameText = new CenterText(this.Aname, CubeCard.nameFont, this.tcolor);
     nameText.textAlign = 'left';
-    nameText.y = y0;
+    const mlh = nameText.getMeasuredLineHeight();
+    const dy2 = nameText.text.includes('\n') ? mlh/2 : 0;
+    nameText.y = y0 - dy2;
     nameText.x = x0;
     const coin = this.makeCoin(x + width - 100, y0);
-    this.addBoxes(y0 + nameText.getMeasuredLineHeight());
+    this.addBoxes(y0 + mlh + dy2);
     this.addChild(nameText, coin); // titleName, not Tile.nameText
     // this.reCache(); // do not reCache: extends bouds to whole bmImage!
     this.paint(this.color)
@@ -150,28 +154,44 @@ export class CubeCard extends Tile  {
 
   /** darker, one-line, up case: NOW, ACTIVE, RUN, POWER-RUN */
   makeTitleBox(title = 'NOW', y0 = 0, below = 0 ): DisplayObject {
-    return this.makeBox(title, y0, below, .6, CubeCard.titleFont, .45);
+    const bColor = C.pickTextColor(C.WHITE, [this.mcolor, this.tcolor])
+    const bgColor = (bColor == this.tcolor) ? bColor : this.darken(bColor, .5);
+    return this.makeBox(title, y0, below, bgColor, CubeCard.titleFont, .45);
   }
 
   /** explanatory text --> dObj with Bounds */
   makeContentBox(text = 'do this...', y0 = 0): DisplayObject {
-    return this.makeBox(text, y0, 0, .8, CubeCard.textFont, .5);
+    const bColor = C.pickTextColor(C.WHITE, [this.mcolor, this.tcolor])
+    const bgColor = (bColor == this.tcolor) ? this.darken(this.mcolor, .91) : this.darken(bColor, .82);
+    return this.makeBox(text, y0, 0, bgColor, CubeCard.textFont, .5);
   }
 
   darken(color: string, dc = .8) {
     const rgb = C.nameToRgba(color);
-    const darka = rgb.map(cv => Math.floor(cv * dc));
+    const darka = rgb.map(cv => Math.min(255, Math.floor(cv * dc)));
     const rgba = rgbaToName(darka, 1); // leave alpha at 1 for now
     return rgba;
   }
 
-  makeBox(text = 'NOW', y0 = 0, below = 0, shade = .8, fontStr: string, dw = .45): DisplayObject {
-    const bgColor = this.darken(this.mcolor, shade);
-    const tText = new Text(text, fontStr, this.tcolor);
+  /**
+   *
+   * @param text
+   * @param y0
+   * @param below
+   * @param bgColor
+   * @param fontSpec as from F.fontSpec: "italic bold 36px Ariel"
+   * @param dw
+   * @returns
+   */
+  makeBox(text = 'NOW', y0 = 0, below = 0, bgColor: string, fontSpec: string, dw = .45): DisplayObject {
+    // FIX: If mcolor is 'whitish', then brighten bcolor & tColor = tcolor
+    const tColor = C.pickTextColor(bgColor, [this.tcolor, C.WHITE]);
+    const tText = new Text(text, fontSpec, tColor);
+    const size = F.fontSize(tText.font);
     const glyphRE = this.tweaker.glyphRE; // red: $! $X
     const cont = this.tweaker.cont = new NamedContainer('aBox');
-    const tweaks = { glyphRE, align: 'left', baseline: 'top' } as TWEAKS;
-    this.tweaker.setTextTweaks(tText, fontStr, undefined, tweaks);
+    const tweaks = { glyphRE, align: 'left', baseline: 'top', font: fontSpec, size } as TWEAKS;
+    this.tweaker.setTextTweaks(tText, fontSpec, tweaks);
       const tb = cont.getBounds();
       const tw = Math.max(tb.width, this.gridSpec.cardw! * dw);
       cont.setBounds(tb.x, tb.y, tw, tb.height + below);
@@ -191,26 +211,64 @@ class CubeTweaker extends TextTweaks {
   /**
    * - $= Cube Icon
    * - $f Foot Icon
+   * - $F Flag
    * - $$ Coin Icon
    * - $# Credit Icon
-   * - $C Cat face?
-   * - $F Flag
    * - $r Roll die
    * - $! power die
+   * - $C Cat face?
    * - $X Swords
+   * - $V shield
+   * - $H cheese
+   * - $
    */
-  glyphRE = /\$[=f$#CFr!X]/g; //
+  glyphRE = /\$[=f$#Fr!CXVH]/g; //
+
+  static glyphImage: Record<string, string> = {
+    '=': 'cube', 'f': 'foot', 'F': 'flag', '$': 'coin', '#': 'credit', 'r': 'roll',
+    '!': 'power', 'C': 'cat', 'X': 'sword', 'V': 'shield', 'H': 'cheese' };
+  glyphParams: Record<string, Record<'dx' | 'dy' | 'tx', number | undefined>> = {};
 
   /**
    *
-   * @param fragt
-   * @param trigger
-   * @param tx
-   * @param ty
-   * @param lineh
+   * @param fragt text before the glyph (for metrics)
+   * @param trigger match from regex (typically: $<char>)
+   * @param linex where next text/char would go
+   * @param liney where next text/char would go
+   * @param lineh line height (lineHeight + leading)
    * @returns
    */
-  override setGlyph(fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight): number {
+  override setGlyph(fragt: Text, trigger: string, linex = 0, liney = 0, lineh = fragt.lineHeight): number {
+    const key = trigger[1];
+    const name = CubeTweaker.glyphImage[key];
+    const alias = AliasLoader, loader = alias.loader;//x
+    const bmi = AliasLoader.loader.getBitmap(name, 50);
+    const bmw = bmi.getBounds().width;
+    const params = this.glyphParams[name];
+    const { dx, dy, tx: tx } = { ...params, dx: 0, dy: 0, tx: bmw };
+    bmi.x += linex + dx;
+    bmi.y += liney + dy;
+
+    switch (key) {
+      case '=': // Cube
+        break;
+      case 'f': // Foot
+        break;
+      case '$': // Coin
+        break;
+      case '#': // Credit
+        break;
+      case 'C': // cat face
+        break;
+      case 'F': // Flag
+        break;
+      case 'r': // roll die
+        break;
+      case '!': // power die
+        break;
+      case 'X': // crossed swords
+        break;
+    }
 
     return tx;
   }
