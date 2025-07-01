@@ -1,6 +1,6 @@
 import { C, F } from "@thegraid/common-lib";
 import { CenterText, CircleShape, NamedContainer, RectWithDisp, TextInRect, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
-import { Text, type DisplayObject } from "@thegraid/easeljs-module";
+import { Text, type Container, type DisplayObject } from "@thegraid/easeljs-module";
 import { AliasLoader, Tile } from "@thegraid/hexlib";
 import { CardShape } from "./card-shape";
 import { TileExporter } from "./tile-exporter";
@@ -20,9 +20,9 @@ export class CubeCard extends Tile  {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
   }
   static cards: CARD[] = [
-    {Aname: 'Card Name', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 grey die from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the die you selected'},
-    {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'Gain 1 Credit per active grey die,\ngain 1 grey die', active: '', run: 'If you have > 5 active grey dice,\nlose this'},
-    {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-grey die [not optional], \nGain $f = half the cost of that die'},
+    {Aname: 'Green Card', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 Grey $= from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the $= you selected'},
+    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Gain 1 $# per active Grey $=,\ngain 1 Grey $=', active: '', run: 'If you have > 4 active Grey $=,\nlose this'},
+    {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-Grey $= [not optional], \nGain $f = half the cost of that die'},
     // {Aname: 'Card Name', cost: 4, color: 'brown', now: '', run: 'You may lose a grey from Roll, \nIf you do: \ngain a grey die and 1 Move'},
     // {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 Move per active grey die; \n-1 Move per active green die'},
     // {Aname: 'Card Name', cost: 1, color: 'red', now: 'test text', run: ''},
@@ -227,7 +227,11 @@ class CubeTweaker extends TextTweaks {
   static glyphImage: Record<string, string> = {
     '=': 'cube', 'f': 'foot', 'F': 'flag', '$': 'coin', '#': 'credit', 'r': 'roll',
     '!': 'power', 'C': 'cat', 'X': 'sword', 'V': 'shield', 'H': 'cheese' };
-  glyphParams: Record<string, Record<'dx' | 'dy' | 'tx', number | undefined>> = {};
+  glyphParams: Record<string, Partial<Record<'dx' | 'dy' | 'tx' | 'size', number | undefined>>> = {
+    foot: { dx: 15, dy: 20, size: 48, tx: 30 },
+    cube: { dx: 15, dy: 20, size: 60, tx: 30 },
+    credit: { dx: 15, dy: 20, size: 60, tx: 30 },
+  };
 
   /**
    *
@@ -235,19 +239,21 @@ class CubeTweaker extends TextTweaks {
    * @param trigger match from regex (typically: $<char>)
    * @param linex where next text/char would go
    * @param liney where next text/char would go
-   * @param lineh line height (lineHeight + leading)
+   * @param lineh line height (lineHeight + leading) (could effect 'size' of glyph?)
    * @returns
    */
-  override setGlyph(fragt: Text, trigger: string, linex = 0, liney = 0, lineh = fragt.lineHeight): number {
+  override setGlyph(cont: Container, fragt: Text, trigger: string, linex = 0, liney = 0, lineh = fragt.lineHeight): number {
     const key = trigger[1];
     const name = CubeTweaker.glyphImage[key];
-    const alias = AliasLoader, loader = alias.loader;//x
-    const bmi = AliasLoader.loader.getBitmap(name, 50);
-    const bmw = bmi.getBounds().width;
     const params = this.glyphParams[name];
-    const { dx, dy, tx: tx } = { ...params, dx: 0, dy: 0, tx: bmw };
+    const { dx, dy, size } = { dx: 0, dy: 0, size: lineh - 2, ...params };
+    const alias = AliasLoader, loader = alias.loader;//x
+    const bmi = AliasLoader.loader.getBitmap(name, size);
+    const bmw = bmi.getBounds().width;
+    const tx = params.tx ?? bmw;
     bmi.x += linex + dx;
     bmi.y += liney + dy;
+    cont.addChild(bmi);
 
     switch (key) {
       case '=': // Cube

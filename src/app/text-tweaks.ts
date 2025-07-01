@@ -7,7 +7,7 @@ export type TWEAKS = {
   style?: string, weight?: string | number, size?: number, family?: string,
   dx?: number, dy?: number, lineno?: number, nlh?: number, // add lead to after/btwn each line.
   glyphRE?: RegExp, // when matched in setTextWithGlyphs, invoke glyphFunc(match, ...)
-  glyphFunc?: ((fragt: Text, trigger: string, tx: number, ty: number, lineh: number) => number), // function to handle glyphRE matches
+  glyphFunc?: ((cont: Container, fragt: Text, trigger: string, tx: number, ty: number, lineh: number) => number), // function to handle glyphRE matches
 };
 
 /** supply Container to hold the tweaked Text */
@@ -24,29 +24,30 @@ export class TextTweaks {
   /** setTextTweaks [Centered] with Tweaks: { color, dx, dy, lineno, baseline, align, nlh, glyphRE }
    * @param text string | Text
    * @param fontStr is fed to makeText (resolve as fam_wght)
-   * @param tweaks: dx, dy: initial x, y-coord, lineno: advances by lineh; style, wght, size, font override fontStr
+   * @param tweaks: dx, dy: initial x, y-coord, lineno: advance liney by nlh; style, wght, size, font override fontStr
    */
   setTextTweaks(text: string | Text, fontStr: string, tweaks?: TWEAKS) {
     const { dx, dy, lineno, baseline, align, nlh } = { dx: 0, dy: 0, lineno: 0, ...tweaks }
     const cText = (text instanceof Text) ? text : this.makeText(text, fontStr, tweaks);
     const lineh = cText.lineHeight = nlh ?? (cText.lineHeight > 0 ? cText.lineHeight : cText.getMeasuredLineHeight());
-    const line0 = lineno * lineh; // first
+    const line0 = lineno * lineh; // baseline y
     cText.textBaseline = (baseline ?? 'middle'); // 'top' | 'bottom'
     cText.textAlign = (align ?? 'center');
     cText.x += dx;
-    cText.y += dy + line0;
-    const gre = tweaks?.glyphRE;
+    cText.y += dy + line0; // place cText in normal/default location
 
+    const gre = tweaks?.glyphRE;
     if (gre && cText.text.match(gre)) {
-      const tweak2 = { ...tweaks, lineno, baseline: (baseline ?? 'middle'), align: (align ?? 'center') }
+      // record info for setTextWithGlyph:
+      const tweak2 = { ...tweaks, baseline: (baseline ?? 'middle'), align: (align ?? 'center') }
       const fontStr = cText.font;            // shrink-resolved fontName
       const lines = cText.text.split('\n');
       lines.forEach((line, lineinc) => {
-        const liney = dy + line0 + lineinc * lineh;
         if (line.match(gre)) {
+          const liney = dy + line0 + lineinc * lineh; // using dy rather than lineno seems wrong
           this.setTextWithGlyph(gre, line, fontStr, lineh, liney, lineinc, tweak2);
         } else {
-          this.setTextTweaks(line, fontStr, tweak2);
+          this.setTextTweaks(line, fontStr, { ...tweak2, lineno: lineno + lineinc });
         }
 
       })
@@ -70,8 +71,8 @@ export class TextTweaks {
     // const linew = linet.getMeasuredWidth();
     let linex = 0;                 // start at left.
     const glyphFunc = tweaks.glyphFunc ??
-        ((fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight) => {
-          return this.setGlyph(fragt, trigger, tx, ty, lineh);
+        ((cont: Container, fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight) => {
+          return this.setGlyph(cont, fragt, trigger, tx, ty, lineh);
         })
     const matches = line.match(glyphRE)!;
     const frags = line.split(glyphRE);    // ASSERT: this line has a regex match
@@ -81,7 +82,7 @@ export class TextTweaks {
       linex += fragt.getMeasuredWidth();
       const fragn = matches?.shift();  // the portion of line that matched glyphRE (eg: '$2')
       if (fragn && n > -1) {                     // ASSERT: a fragn between or after each fragt
-        const tx = glyphFunc(fragt, fragn, linex, liney, lineh); // there's a glyphRE, so set it:
+        const tx = glyphFunc(this.cont, fragt, fragn, linex, liney, lineh); // there's a glyphRE, so set it:
         linex = linex + tx;
       }
     })
@@ -128,14 +129,15 @@ export class TextTweaks {
 
   /**
    * reference implementation of a glyph function.
-   * @param fragt previous Text (so you can get size, height, alignment, etc)
+   * @param cont Container to hold glyph dispObj
+   * @param fragt previous Text (to get size, height, alignment, etc)
    * @param trigger the matched text to be replaced with a glyph
    * @param tx x location for glyph (textAlign: left|center|right)
    * @param ty y location for glyph (textBaseline: top|middle|bottom)
    * @param lineh line height of current line (may differ from fragt.lineHeight)
    * @return width consumed by glyph (pre- and post- space)
    */
-  setGlyph(fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight) {
+  setGlyph(cont: Container, fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight) {
     return 0;
   }
 

@@ -39,7 +39,13 @@ class NullGameSetup extends GameSetupLib {
   override startup(scenario: Scenario): void {
     super.startup(scenario);
     Tile.gamePlay = this.gamePlay;
-    this.clickButton('makePage');
+    this.clickButton('makePage'); // app.component.html
+    setTimeout(() => this.setScale('.5'), 300);
+  }
+
+  setScale(newScale: string) {
+    const canvasDiv = document.getElementById('canvasDiv') as HTMLCanvasElement;
+    canvasDiv.style.setProperty('scale', newScale);
   }
 
   clickButton(id: string) {
