@@ -1,6 +1,6 @@
 import { C, F, stime } from "@thegraid/common-lib";
-import { CenterText, CircleShape, NamedContainer, RectWithDisp, type CountClaz, type Paintable, type RectShape } from "@thegraid/easeljs-lib";
-import { Shape, Text, type Container, type DisplayObject } from "@thegraid/easeljs-module";
+import { CenterText, CircleShape, NamedContainer, RectShape, RectWithDisp, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
+import { Shape, Text, type Bitmap, type Container, type DisplayObject } from "@thegraid/easeljs-module";
 import { AliasLoader, Tile } from "@thegraid/hexlib";
 import { CardShape } from "./card-shape";
 import { TextTweaks, type TWEAKS } from "./text-tweaks";
@@ -12,11 +12,10 @@ function rgbaToName(v: Uint8ClampedArray, alpha?: number|string) {
   }
 
 export class CubeCard extends Tile  {
-  // static family = 'SF Compact Rounded';
-  // static family = 'Nunito';
-  static family = 'Futura';
-  // static nameFont = F.fontSpec(65, `${CubeCard.family}`, 'bold');
-  // static nameFont = (`bold 65px ${CubeCard.family}`);
+  // static family = 'SF Compact Rounded'; static fontLead = 0;
+  // static family = 'Nunito'; static fontLead = 0;
+  // static family = 'Futura'; static fontLead = 12; // Futura steps on itsefl..
+  static family = 'Helvetica Neue'; static fontLead = 6;
   static nameFont = (`normal 470 condensed 65px ${CubeCard.family}`);
   static coinFont = F.fontSpec(80, `${CubeCard.family}`, 'bold');
   static titleFont = F.fontSpec(36, `${CubeCard.family}`, 'bold');
@@ -32,7 +31,7 @@ export class CubeCard extends Tile  {
     {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 $f per active Grey $=; \n-1 $f per active Green $='},
     {Aname: 'Card Name', cost: 1, color: 'red', now: '+1 $r If you have one\n +2 Tlhfyq $r $= if you have to.', run: ''},
     {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: ''},
-    {Aname: 'Card\nName', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a Grey $='},
+    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a Grey $='},
     {Aname: 'Card\nName', cost: 8, color: 'orange', now: 'Gain 1 $f per active Grey $=, \nuse them immediately', active: '', run: 'If you have > 4 active Grey $=,\nlose this'},
     {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'If a Green $= is active, lose it,\ngain 3 $f & 3 $$', run: 'gain a $= costing < the $= you lost.'},
     {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -122,16 +121,21 @@ export class CubeCard extends Tile  {
       bmImage.x += 0; // can fudge if you want to see the cropped bleed graphics
       this.addChild(bmImage);
     }
-    //
+    // set card name:
     const y0 = 0 - h * .36; // for baseLine = 'middle'
-    const nameText = new CenterText(this.Aname, CubeCard.nameFont, this.tcolor);
-    nameText.textAlign = 'left';
-    const mlh = nameText.getMeasuredLineHeight();
-    const dy2 = nameText.text.includes('\n') ? mlh/2 : 0;
-    nameText.y = y0 - dy2;
+    const nameText0 = new CenterText(this.Aname, CubeCard.nameFont, this.tcolor);
+    const mlh = nameText0.getMeasuredLineHeight();
+    const nlh = mlh + CubeCard.fontLead;
+    const tweaks: TWEAKS = { color: this.tcolor, nlh, align: 'left'};
+    this.tweaker.cont = this;  // add directly with this.addChild();
+    const nameText = this.tweaker.setTextTweaks(this.Aname, CubeCard.nameFont, tweaks); // addChild(nameText)
+    const nlines = nameText.text.split('\n').length;
+    const dy2 = nlines * nlh;
+    nameText.y = y0 - (nlines == 1 ? 0 : mlh/2);
     nameText.x = x0;
+    // set cost coin:
     const coin = this.makeCoin(x + width - 100, y0);
-    this.addBoxes(y0 + mlh + dy2);
+    this.addBoxes(nameText.y + dy2);
     this.addChild(nameText, coin); // titleName, not Tile.nameText
     // this.reCache(); // do not reCache: extends bouds to whole bmImage!
     this.paint(this.color)
@@ -210,9 +214,9 @@ export class CubeCard extends Tile  {
     const tText = new Text(text, fontSpec, tColor);
     const size = F.fontSize(tText.font);
     const glyphRE = this.tweaker.glyphRE; // red: $! $X
-    const cont = this.tweaker.cont = new NamedContainer('aBox');
     const tweaks = { glyphRE, align: 'left', baseline: 'top', font: fontSpec, color: tColor, size, nlh: size + 5 } as TWEAKS;
-    const bText = this.tweaker.setTextTweaks(tText, fontSpec, tweaks); // tweaker.cont == this.cont
+    const cont = this.tweaker.cont = new NamedContainer('aBox');
+    const bText = this.tweaker.setTextTweaks(tText, fontSpec, tweaks);
       const tb = cont.getBounds();
       const tw = Math.max(tb.width, this.gridSpec.cardw! * dw);
       cont.setBounds(tb.x, tb.y, tw, tb.height);
@@ -274,8 +278,10 @@ class CubeTweaker extends TextTweaks {
     const name = CubeTweaker.glyphImage[key];
     const params = this.glyphParams[name] ?? {};
     const { dx, dy, size } = { dx: 0, dy: 0, size: lineh - 2, ...params };
-    const alias = AliasLoader, loader = alias.loader;//x
-    const bmi = AliasLoader.loader.getBitmap(name, size); // TODO: stencil with tcolor!
+    const aliasLoader = AliasLoader; // for debugger access
+    const bmi0 = aliasLoader.loader.getBitmap(name, size);
+    const color = fragt.color;
+    const bmi = (color.match(/white/i)) ? bmi0 : new StencilImage(bmi0, color);
     const bmw = bmi.getBounds().width;
     const tx = params.tx ?? bmw;
     bmi.x += linex + dx;
@@ -304,6 +310,27 @@ class CubeTweaker extends TextTweaks {
     }
 
     return tx;
+  }
+}
+class StencilImage extends NamedContainer {
+  colorRect!: RectShape
+  /** color bitmap with 'source-atop' */
+  constructor(public bitmap: Bitmap, public color: string, scale = 1) {
+    super('stencil')
+
+    const w = bitmap.image.width, h = bitmap.image.height;
+    bitmap.setBounds(0, 0, w, h)
+    this.addChild(bitmap);
+
+    const { x, y, width, height } = this.getBounds();
+    this.colorRect = new RectShape({x, y, w: width, h: height}, color,'')
+    this.colorRect.compositeOperation = "source-atop";
+    this.addChild(this.colorRect);
+    this.cache(x, y, width, height, scale)
+  }
+  paint(color: string) {
+    this.colorRect.paint(color)
+    this.updateCache();
   }
 }
 
