@@ -40,7 +40,7 @@ class NullGameSetup extends GameSetupLib {
     super.startup(scenario);
     Tile.gamePlay = this.gamePlay;
     this.clickButton('makePage'); // app.component.html
-    setTimeout(() => this.setScale('.5'), 300);
+    setTimeout(() => this.setScale('.6'), 300);
   }
 
   setScale(newScale: string) {

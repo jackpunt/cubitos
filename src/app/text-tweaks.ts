@@ -44,8 +44,7 @@ export class TextTweaks {
       const lines = cText.text.split('\n');
       lines.forEach((line, lineinc) => {
         if (line.match(gre)) {
-          const liney = dy + line0 + lineinc * lineh; // using dy rather than lineno seems wrong
-          this.setTextWithGlyph(gre, line, fontStr, lineh, liney, lineinc, tweak2);
+          this.setTextWithGlyph(gre, line, fontStr, lineh, lineno + lineinc, tweak2);
         } else {
           this.setTextTweaks(line, fontStr, { ...tweak2, lineno: lineno + lineinc });
         }
@@ -66,10 +65,11 @@ export class TextTweaks {
    * @param lineno current line within multiline string
    * @param tweaks
    */
-  setTextWithGlyph(glyphRE: RegExp, line: string, fontStr: string, lineh: number, liney: number, lineno: number, tweaks: TWEAKS) {
+  setTextWithGlyph(glyphRE: RegExp, line: string, fontStr: string, lineh: number, lineno: number, tweaks: TWEAKS) {
     // const linet = new Text(line, fontStr);
     // const linew = linet.getMeasuredWidth();
     let linex = 0;                 // start at left.
+    const liney = lineno * lineh;
     const glyphFunc = tweaks.glyphFunc ??
         ((cont: Container, fragt: Text, trigger: string, tx = 0, ty = 0, lineh = fragt.lineHeight) => {
           return this.setGlyph(cont, fragt, trigger, tx, ty, lineh);
@@ -81,7 +81,7 @@ export class TextTweaks {
       const fragt = this.setTextTweaks(fText, fontStr, { ...tweaks, dx: linex, dy: liney, align: 'left' });
       linex += fragt.getMeasuredWidth();
       const fragn = matches?.shift();  // the portion of line that matched glyphRE (eg: '$2')
-      if (fragn && n > -1) {                     // ASSERT: a fragn between or after each fragt
+      if (fragn) {                     // ASSERT: a fragn between or after each fragt
         const tx = glyphFunc(this.cont, fragt, fragn, linex, liney, lineh); // there's a glyphRE, so set it:
         linex = linex + tx;
       }
