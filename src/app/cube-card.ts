@@ -24,16 +24,17 @@ export class CubeCard extends Tile  {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
   }
   static cards: CARD[] = [
+    {Aname: 'Red Card', cost: 1, color: 'red', now: '', run: '(  $![COMPARE $X])Do the power run'},
+
     {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: '1:I$Fy2:$$3:$!4:$XLast\nLiMTBe 2:$f:$C:$V:$H:'},
-    {Aname: 'Green Card', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 Grey $= from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the $= you selected'},
-    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Gain 1 $# $f per active Grey $=,\ngain 1 Grey $=', active: '', run: 'If you have > 4 active Grey $=,\nlose this'},
+    {Aname: 'Green Card', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 Grey $= from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the $= you selected.'},
+    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Gain 1 $# $f per active Grey $=,\ngain 1 Grey $=.', active: '', run: 'If you have > 4 active Grey $=,\nlose this.'},
     {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-Grey $= [not optional], \nGain $f = half the cost of that die.'},
-    {Aname: 'Card Name', cost: 4, color: 'brown', now: '', run: 'You may lose a Grey $= from Roll, \nIf you do: \ngain a Grey $= and 1 $f'},
-    {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 $f per active $C Grey $=; \n-1 $f per active Green $='},
-    {Aname: 'Card Name', cost: 1, color: 'red', now: '+1 $r If you have one\n +2 Tlhfyq $r $= if you have to.', run: ''},
-    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a Grey $='},
-    {Aname: 'Card\nName', cost: 8, color: 'orange', now: 'Gain 1 $f per active Grey $=, \nuse them immediately', active: '', run: 'If you have > 4 active Grey $=,\nlose this'},
-    {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'If a Green $= is active, lose it,\ngain 3 $f & 3 $$', run: 'gain a $= costing < the $= you lost.'},
+    {Aname: 'Brown Card', cost: 4, color: 'brown', now: '', run: 'You may lose a Grey $= from Roll, \nIf you do: \ngain a Grey $= and 1 $f.'},
+    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active $C Grey $=; \n-1 $f per active Green $=.'},
+    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a Grey $=.'},
+    {Aname: 'Orange\nName', cost: 8, color: 'orange', now: 'Gain 1 $f per active Grey $=, \nuse them immediately.', active: '', run: 'If you have > 4 active Grey $=,\nlose this.'},
+    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'If a Green $= is active, lose it,\ngain 3 $f & 3 $$.', run: 'gain a $= costing < the $= you lost.'},
     {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -81,14 +82,13 @@ export class CubeCard extends Tile  {
   now = '';
   active = '';
   run = '';
-  runp = '';
   image?: ImageBitmap;
   tweaker: CubeTweaker;
   gridSpec = TileExporter.euroPoker;
 
   constructor(desc: CARD) {
     super(desc.Aname);
-    const desc2 = { now: '', active: '', run: '', power: '', ...desc };
+    const desc2 = { now: '', active: '', run: '', ...desc };
     this.color = desc.color;
     this.cost = desc.cost;
     this.now = desc2.now;
@@ -152,18 +152,25 @@ export class CubeCard extends Tile  {
   }
 
   addBoxes(y0 = 0, ygap = 16) {
-    const keys = ((this.color == 'red') ? ['now', 'active', 'run', 'runp'] : ['now', 'active', 'run', 'runp'])  as (keyof CubeCard)[];
-    const lines = keys.filter(l => this[l]).map(l => ({ key: l, txt: this[l] })) as Record<string, string>[];
-    lines.map(txtr => {
-      const { key, txt } = txtr;
-      const cbox = this.makeContentBox(txt, y0);
-      cbox.x += 0
-      const overlap = this.corner + 2;    // > corner radius; maybe plus lead
-      const tbox = this.makeTitleBox(key.toUpperCase(), y0); // TextInRect
-      cbox.y += tbox.getBounds().height - overlap - (F.fontSize(CubeCard.titleFont) / 9); // overlap radius, descender space
+    const keys0 = ['now', 'active', 'run'] as (keyof CubeCard)[];
+    const keys = keys0.filter(l => this[l]); // as Record<string|'txt', string>[];
+    keys.map(key => {
+      const txt = this[key] as string;
+      const special = txt.match(/^\(([^\n]*)\)(.*)/);
+      const title = special ? special[1] : key.toUpperCase();
+      const content = special ? special[2] : txt;
+      const tbox = this.makeTitleBox(title, y0) as RectWithDisp;
+      const cbox = this.makeContentBox(content, y0);
+      // overlap corner radius, lead, descenders (approx)
+      const overlap = this.corner + 2 + (F.fontSize(CubeCard.titleFont) / 9);
+      cbox.y = tbox.y + tbox.getBounds().height - overlap;
       cbox.y -= cbox.getBounds().y; // when glyph causes bounds to grow up...
       this.addChild(tbox, cbox);
-      y0 += tbox.getBounds().height + cbox.getBounds().height + ygap;
+      y0 = cbox.y + cbox.getBounds().height + ygap;
+      // In case glyph or title have descenders, extend southern border:
+      tbox.borders = [undefined, undefined, undefined, 15];
+      tbox.setBounds(undefined, 0, 0, 0);
+      tbox.paint(undefined, true);
       return tbox;
     });
   }
@@ -171,7 +178,7 @@ export class CubeCard extends Tile  {
   /** darker, one-line, up case: NOW, ACTIVE, RUN, POWER-RUN */
   makeTitleBox(title = 'NOW', y0 = 0 ): DisplayObject {
     const bColor = C.pickTextColor(C.WHITE, [this.mcolor, this.tcolor])
-    const bgColor = this.useAltColor ? bColor : this.darken(bColor, .5);
+    const bgColor = this.useAltColor ? bColor : this.darken(bColor, .4);
     return this.makeBox(title, y0, bgColor, CubeCard.titleFont, C.WHITE, .45);
   }
 
@@ -181,8 +188,12 @@ export class CubeCard extends Tile  {
     const bgColor = this.useAltColor ? this.darken(this.mcolor, .91) : this.darken(bColor, .82);
     const tColor = this.tcolor;
     const strokec = this.useAltColor ? bColor : this.darken(bColor, .5);
-    const rwd = this.makeBox(text, y0, bgColor, CubeCard.textFont, tColor, .5, strokec);
-    rwd.x += 1; // account for strokec
+    const rwd = this.makeBox(text, y0, bgColor, CubeCard.textFont, tColor, .5, strokec) as RectWithDisp;
+    const ss = 3;
+    rwd.rectShape.setRectRad({ s: ss }); //
+    rwd.rectShape.setBounds(undefined, 0, 0, 0);
+    rwd.rectShape.paint(undefined, true);
+    rwd.x += ss; // account for strokec
     // rwd.y += 1;
     return rwd
   }
@@ -259,14 +270,14 @@ class CubeTweaker extends TextTweaks {
 
     /** suitable for 36px textFont */
   glyphParams: Record<string, Partial<Record<'dx' | 'dy' | 'tx' | 'size' | 'noStencil', number | undefined>>> = {
-    foot: { dx: 15, dy: 22, size: 46 },
+    foot: { dx: 15, dy: 18, size: 45 },
     cube: { dx: 15, dy: 18, size: 80 },
     credit: { dx: 15, dy: 20, size: 60, noStencil: 1 },
     credit2: { dx: 15, dy: 18, size: 46, noStencil: 1 },
     roll: { dx: 50, dy: 17, size: 90 },
     flag: { dx: 25, dy: 20, size: 90 },
     coin: { dx: 25, dy: 17, size: 90, noStencil: 1 },
-    power: { dx: 25, dy: 17, size: 90 },
+    power: { dx: 25, dy: 17, size: 45 },
     sword: { dx: 25, dy: 17, size: 45 },
     shield: { dx: 25, dy: 20, size: 40 },
     cat: { dx: 25, dy: 18, size: 46 },
