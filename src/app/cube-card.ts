@@ -24,13 +24,13 @@ export class CubeCard extends Tile  {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
   }
   static cards: CARD[] = [
+    {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: '1:I$Fy2:$$3:$!4:$XLast\nLiMTBe 2:$f:$C:$V:$H:'},
     {Aname: 'Green Card', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 Grey $= from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the $= you selected'},
     {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Gain 1 $# $f per active Grey $=,\ngain 1 Grey $=', active: '', run: 'If you have > 4 active Grey $=,\nlose this'},
     {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-Grey $= [not optional], \nGain $f = half the cost of that die.'},
     {Aname: 'Card Name', cost: 4, color: 'brown', now: '', run: 'You may lose a Grey $= from Roll, \nIf you do: \ngain a Grey $= and 1 $f'},
-    {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 $f per active Grey $=; \n-1 $f per active Green $='},
+    {Aname: 'Card Name', cost: 6, color: 'white', now: '', run: '+1 $f per active $C Grey $=; \n-1 $f per active Green $='},
     {Aname: 'Card Name', cost: 1, color: 'red', now: '+1 $r If you have one\n +2 Tlhfyq $r $= if you have to.', run: ''},
-    {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: ''},
     {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a Grey $='},
     {Aname: 'Card\nName', cost: 8, color: 'orange', now: 'Gain 1 $f per active Grey $=, \nuse them immediately', active: '', run: 'If you have > 4 active Grey $=,\nlose this'},
     {Aname: 'Card Name', cost: 7, color: 'yellow', now: 'If a Green $= is active, lose it,\ngain 3 $f & 3 $$', run: 'gain a $= costing < the $= you lost.'},
@@ -250,18 +250,27 @@ class CubeTweaker extends TextTweaks {
    * - $X Swords
    * - $V shield
    * - $H cheese
-   * - $
    */
   glyphRE = /\$[=f$#Fr!CXVH]/g; //
 
   static glyphImage: Record<string, string> = {
-    '=': 'cube', 'f': 'foot', 'F': 'flag', '$': 'coin', '#': 'credit', 'r': 'roll',
+    '=': 'cube', 'f': 'foot', 'F': 'flag', '$': 'coin', '#': 'credit2', 'r': 'roll',
     '!': 'power', 'C': 'cat', 'X': 'sword', 'V': 'shield', 'H': 'cheese' };
-  glyphParams: Record<string, Partial<Record<'dx' | 'dy' | 'tx' | 'size', number | undefined>>> = {
-    foot: { dx: 15, dy: 22, size: 46, tx: 30 },
-    cube: { dx: 15, dy: 18, size: 80, tx: 30 },
-    credit: { dx: 15, dy: 20, size: 60, tx: 30 },
-    roll: { dx: 50, dy: 17, size: 90, tx: 96 },
+
+    /** suitable for 36px textFont */
+  glyphParams: Record<string, Partial<Record<'dx' | 'dy' | 'tx' | 'size' | 'noStencil', number | undefined>>> = {
+    foot: { dx: 15, dy: 22, size: 46 },
+    cube: { dx: 15, dy: 18, size: 80 },
+    credit: { dx: 15, dy: 20, size: 60, noStencil: 1 },
+    credit2: { dx: 15, dy: 18, size: 46, noStencil: 1 },
+    roll: { dx: 50, dy: 17, size: 90 },
+    flag: { dx: 25, dy: 20, size: 90 },
+    coin: { dx: 25, dy: 17, size: 90, noStencil: 1 },
+    power: { dx: 25, dy: 17, size: 90 },
+    sword: { dx: 25, dy: 17, size: 45 },
+    shield: { dx: 25, dy: 20, size: 40 },
+    cat: { dx: 25, dy: 18, size: 46 },
+    cheese: { dx: 25, dy: 22, size: 40 },
   };
 
   /**
@@ -278,12 +287,11 @@ class CubeTweaker extends TextTweaks {
     const name = CubeTweaker.glyphImage[key];
     const params = this.glyphParams[name] ?? {};
     const { dx, dy, size } = { dx: 0, dy: 0, size: lineh - 2, ...params };
+    const tx = params.tx ?? dx * 2;  // Assert: images is centered
     const aliasLoader = AliasLoader; // for debugger access
     const bmi0 = aliasLoader.loader.getBitmap(name, size);
     const color = fragt.color;
-    const bmi = (color.match(/white/i)) ? bmi0 : new StencilImage(bmi0, color);
-    const bmw = bmi.getBounds().width;
-    const tx = params.tx ?? bmw;
+    const bmi = (color.match(/white/i) || params.noStencil) ? bmi0 : new StencilImage(bmi0, color);
     bmi.x += linex + dx;
     bmi.y += liney + dy;
     cont.addChild(bmi);
