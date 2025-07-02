@@ -88,9 +88,12 @@ export class TextTweaks {
     })
   }
 
+  /** <style>? <weight|attribute* >?<size>px <family> */
   parseFontStr(fontStr: string) {
-    // fontStr like: 'italic 410 36px SF Compact Rounded'
-    const regex = /^ *(\w+)? *(thin|light|regular|normal|bold|semibold|heavy|\d+ )? *(\d+)px (.*)$/i;
+    // fontStr like: 'italic 410 compressed 36px SF Compact Rounded'
+    const weights = /(thin|light|regular|normal|bold|semibold|heavy)/i;
+    // for F.fontSpec(), we conjoin <weight|attributes> in match[2]
+    const regex = /^ *(normal|italic|oblique)? *([\w ]* |\d+ )? *(\d+)px (.*)$/i;
     const match = fontStr.match(regex);
     const style = match?.[1] ?? F.defaultStyle; // normal
     const weight = match?.[2] ?? F.defaultWght; // 410
