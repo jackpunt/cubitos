@@ -100,21 +100,18 @@ export class CubeCard extends Tile  {
 
   // invoked by constructor.super()
   override makeShape(): Paintable {
-    return new CardShape('lavender', this.color, this.radius);
+    return new CardShape('lavender', this.color, this.radius, false, 0, 10);
   }
-  // TODO: put all the components on the canvas
 
-  // background, with grey rhombus
-  // image scaned from card (includes dice faces!)
-  // Name
+  // TODO: background, with grey rhombus
+  // image scanned from card (includes dice faces!)
+  // Card Name (maybe two lines)
   // Cost (in dual circles, 130px)
-  // [now], [active], [power-run], [run]
+  // [now], [active], [run]
   addComponents() {
     //
     const h = this.gridSpec.cardh!;
     const bmImage = AliasLoader.loader.getBitmap(this.color, this.gridSpec.cardw!); // scaled to fit cardw
-    const bmBounds = bmImage.getBounds();
-    const bmw = bmBounds?.width ?? 3160;
     const { x, y, height, width } = this.baseShape.getBounds();
     const x0 = this.x0 = x + width * .44;
     if (bmImage) {
