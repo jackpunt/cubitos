@@ -17,24 +17,27 @@ export class CubeCard extends Tile  {
   // static family = 'Futura'; static fontLead = 12; // Futura steps on itsefl..
   static family = 'Helvetica Neue'; static fontLead = 6;
   static nameFont = (`normal 470 condensed 65px ${CubeCard.family}`);
-  static coinFont = F.fontSpec(80, `${CubeCard.family}`, 'bold');
+  static coinFont = F.fontSpec(90, `${CubeCard.family}`, 'bold');
   static titleFont = F.fontSpec(36, `${CubeCard.family}`, 'bold');
   static textFont = F.fontSpec(36, `${CubeCard.family}`, '470 condensed');
+  static itextFont = F.fontSpec(36, `${CubeCard.family}`, 'italic 470 condensed');
   static get fnames() {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
   }
   static cards: CARD[] = [
-    {Aname: 'Red Card', cost: 1, color: 'red', now: '', run: '(  $![COMPARE $X])Do the power run'},
+    {Aname: 'Red Menace 2', cost: 6, color: 'red', now: '', runp: '($! RUN)$! = 2 $X each.', run: '(RUN [COMPARE $X])MOST $X:\n[Start player $= breaks ties]\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].'},
+    {Aname: 'Red Menace', cost: 5, color: 'red', now: '', run: '(RUN [COMPARE $X])MOST $X:\n[Start player $= breaks ties]\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].'},
+    {Aname: 'Slim Cat', cost: 5, color: 'white', now: 'Gain 1$$.\n\nGain 1 GRAY $= [if possible]\nand gain 3$f', run: '+1 $f per active GREY $=; \n-1 $f per active GREEN $=.'},
 
-    {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: '1:I$Fy2:$$3:$!4:$XLast\nLiMTBe 2:$f:$C:$V:$H:'},
-    {Aname: 'Green Card', cost: 4, color: 'green', now: '', active: 'If you would bust, use this: \nselect 1 Grey $= from Roll Zone, \nset it to a face; you do not bust', run: 'Lose the $= you selected.'},
-    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Gain 1 $# $f per active Grey $=,\ngain 1 Grey $=.', active: '', run: 'If you have > 4 active Grey $=,\nlose this.'},
-    {Aname: 'Switch Hitter', cost: 4, color: 'orange', now: '', run: 'Lose 1 non-Grey $= [not optional], \nGain $f = half the cost of that die.'},
-    {Aname: 'Brown Card', cost: 4, color: 'brown', now: '', run: 'You may lose a Grey $= from Roll, \nIf you do: \ngain a Grey $= and 1 $f.'},
-    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active $C Grey $=; \n-1 $f per active Green $=.'},
-    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a Grey $=.'},
-    {Aname: 'Orange\nName', cost: 8, color: 'orange', now: 'Gain 1 $f per active Grey $=, \nuse them immediately.', active: '', run: 'If you have > 4 active Grey $=,\nlose this.'},
-    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'If a Green $= is active, lose it,\ngain 3 $f & 3 $$.', run: 'gain a $= costing < the $= you lost.'},
+    {Aname: 'Cubasaurus', cost: 1, color: 'purple', now: 'test text', run: ''},
+    {Aname: 'Niña Cubelada', cost: 5, color: 'green', now: '', active: 'If you would bust, use this: \nYou may select 1 GREY $= \nfrom your Roll Zone \nand set it to a face.\nIf you did, you do not bust.', run: 'Lose the $= you selected.'},
+    {Aname: 'Mellow Yellow', cost: 7, color: 'yellow', now: 'Gain 1 $# per active GREY $=.', active: '', run: 'Gain a GREY $=.\nIf you have > 4 active GREY $=,\nlose this.'},
+    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'If you have an active GREEN $=,\nlose it.', run: 'Gain 3$$\nGain a $= costing < the $= you lost.\nGain $f = the cost of the $= you gain.'},
+    {Aname: 'Switch Hitter', cost: 6, color: 'orange', now: '', run: 'Lose 1 non-GREY $= [not optional], \nGain $f = half the cost of that die.'},
+    {Aname: 'Bone Yard', cost: 3, color: 'brown', now: '', run: 'You may lose a GREY $= from Roll, \nIf you do: \ngain a GREY $= and 1 $f.'},
+    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active GREY $=; \n-1 $f per active GREEN $=.'},
+    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a GREY $=.'},
+    {Aname: 'Grand Slam', cost: 8, color: 'orange', now: 'Gain 1 $f per active GREY $=, \nuse them immediately.', active: '', run: 'If you have > 4 active GREY $=,\nlose this.'},
     {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -81,18 +84,22 @@ export class CubeCard extends Tile  {
   cost = 2;
   now = '';
   active = '';
+  runp = '';
   run = '';
   image?: ImageBitmap;
   tweaker: CubeTweaker;
   gridSpec = TileExporter.euroPoker;
+  keys = ['now', 'active', 'run'] as (keyof CubeCard)[];
 
   constructor(desc: CARD) {
     super(desc.Aname);
-    const desc2 = { now: '', active: '', run: '', ...desc };
+    const desc2 = { now: '', active: '', runp: '', run: '', ...desc };
     this.color = desc.color;
     this.cost = desc.cost;
+    // this.keys.map(k => this[k] = desc2[k])
     this.now = desc2.now;
     this.active = desc2.active;
+    this.runp = desc2.runp;
     this.run = desc2.run;
     this.tweaker = new CubeTweaker(this);
     this.addComponents();
@@ -138,24 +145,24 @@ export class CubeCard extends Tile  {
     this.paint(this.color)
   }
 
-  makeCoin(x0=0, y0=0) {
+  makeCoin(x0 = 0, y0 = 0) {
     const cont = new NamedContainer('costCoin');
-    const ring = new CircleShape(C.coinGold, 60, '');
-    const disk = new CircleShape('rgb(180,130,17)', 50, '');
+    const bmi = AliasLoader.loader.getBitmap('coin', 300); // noStencil
+    bmi.x += 2; bmi.y -= 2;
     const cost = new CenterText(`${this.cost}`, CubeCard.coinFont, C.coinGold)
-    cont.addChild(ring, disk, cost)
+    cont.addChild(bmi, cost);
     cont.x = x0; cont.y = y0;
     return cont;
   }
 
   addBoxes(y0 = 0, ygap = 16) {
-    const keys0 = ['now', 'active', 'run'] as (keyof CubeCard)[];
+    const keys0 = ['now', 'active', 'runp', 'run'] as (keyof CubeCard)[];
     const keys = keys0.filter(l => this[l]); // as Record<string|'txt', string>[];
     keys.map(key => {
-      const txt = this[key] as string;
+      const txt = `${this[key] as string} `;
       const special = txt.match(/^\(([^\n]*)\)(.*)/);
       const title = special ? special[1] : key.toUpperCase();
-      const content = special ? special[2] : txt;
+      const content = special ? txt.substring(title.length + 2) : txt;
       const tbox = this.makeTitleBox(title, y0) as RectWithDisp;
       const cbox = this.makeContentBox(content, y0);
       // overlap corner radius, lead, descenders (approx)
@@ -273,7 +280,7 @@ class CubeTweaker extends TextTweaks {
     credit2: { dx: 15, dy: 18, size: 46, noStencil: 1 },
     roll: { dx: 50, dy: 17, size: 90 },
     flag: { dx: 25, dy: 20, size: 90 },
-    coin: { dx: 25, dy: 17, size: 90, noStencil: 1 },
+    coin: { dx: 20, dy: 17, size: 60, noStencil: 1 },
     power: { dx: 25, dy: 17, size: 45 },
     sword: { dx: 25, dy: 17, size: 45 },
     shield: { dx: 25, dy: 20, size: 40 },
