@@ -280,12 +280,12 @@ class CubeTweaker extends TextTweaks {
     '=': 'cube', 'f': 'foot', 'F': 'flag', '$': 'coin', '#': 'credit2', 'r': 'roll',
     '!': 'power', 'C': 'cat', 'X': 'sword', 'V': 'shield', 'H': 'cheese' };
 
-    /** suitable for 36px textFont */
+  /** suitable for 36px textFont */
   glyphParams: Record<string, Partial<Record<'dx' | 'dy' | 'tx' | 'size' | 'noStencil', number | undefined>>> = {
     foot: { dx: 15, dy: 18, size: 45 },
     cube: { dx: 18, dy: 18, size: 80 },
-    credit: { dx: 15, dy: 20, size: 60, noStencil: 1 },
-    credit2: { dx: 15, dy: 18, size: 46, noStencil: 1 },
+    credit: { dx: 15, dy: 20, size: 60, noStencil: 1 },  // blank inside
+    credit2: { dx: 15, dy: 18, size: 46, noStencil: 1 }, // with inner '$'
     roll: { dx: 50, dy: 17, size: 90 },
     flag: { dx: 25, dy: 20, size: 90 },
     coin: { dx: 20, dy: 17, size: 60, noStencil: 1 },
@@ -305,16 +305,15 @@ class CubeTweaker extends TextTweaks {
    * Implict tweaks.glyphFunc
    * @param fragt text before the glyph (for metrics)
    * @param trigger match from regex (typically: $<char>)
-   * @param linex where next text/char would go
-   * @param liney where next text/char would go
-   * @param lineh line height (lineHeight + leading) (could effect 'size' of glyph?)
-   * @returns x-coord at end of glyph
+   * @param linex where next text/char would go (from tweaks.dx)
+   * @param liney where next text/char would go (from tweaks.dy)
+   * @returns increment to dx
    */
   override setGlyph(cont: Container, fragt: Text, trigger: string, linex = 0, liney = 0): number {
     const key = trigger[1];
     const name = CubeTweaker.glyphImage[key];
     const params = this.glyphParams[name] ?? {};
-    const { dx, dy, size } = { dx: 0, dy: 0, size: fragt.getMeasuredHeight(), ...params };
+    const { dx, dy, size, tx } = { dx: 0, dy: 0, size: fragt.getMeasuredHeight(), ...params };
     const aliasLoader = AliasLoader; // for debugger access
     const bmi0 = aliasLoader.loader.getBitmap(name, size);
     const color = fragt.color;
@@ -322,29 +321,7 @@ class CubeTweaker extends TextTweaks {
     bmi.x += linex + dx;
     bmi.y += liney + dy;
     cont.addChild(bmi);
-
-    switch (key) {
-      case '=': // Cube
-        break;
-      case 'f': // Foot
-        break;
-      case '$': // Coin
-        break;
-      case '#': // Credit
-        break;
-      case 'C': // cat face
-        break;
-      case 'F': // Flag
-        break;
-      case 'r': // roll die
-        break;
-      case '!': // power die
-        break;
-      case 'X': // crossed swords
-        break;
-    }
-
-    return bmi.x + dx; // glyph is centered: [-dx...+dx]
+    return tx ?? 2 * dx; // typically glyph is centered: [-dx...+dx]
   }
 }
 class StencilImage extends NamedContainer {

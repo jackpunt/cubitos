@@ -27,13 +27,14 @@ export class TextTweaks {
     this.nparams = nparams ?? {};
   }
 
-  /** setTextTweaks [Centered] with Tweaks: { color, dx, dy, lineno, baseline, align, nlh, glyphRE }
+  /** setTextTweaks [Centered] with Tweaks: { color, dx, dy, baseline, align, nlh, glyphRE }
    *
    * for each line: setLineMaybeItalic -> setLineWithGlyphs -> setGlyph|setTextFrag -> makeText
    *
    * @param text string | Text
    * @param fontStr is fed to makeText (resolve as fam_wght)
-   * @param tweaks: dx, dy: initial x, y-coord, lineno: advance liney by nlh; style, wght, size, font override fontStr
+   * @param tweaks: dx, dy: initial x, y-coord, nlh: advance dy per newline; style, wght, size, font override fontStr
+   * @returns the final Text child
    */
   setTextTweaks(text: string | Text, fontStr: string, tweaks?: TWEAKS): Text {
     fontStr = (text instanceof Text) ? text.font : fontStr; // use font from given Text
@@ -44,8 +45,11 @@ export class TextTweaks {
     // Do each line:
     let cText!: Text, dy = dy0;
     lines.split('\n').forEach(line => {
+      const nchild = this.cont.children.length;
       cText = this.setLineMaybeItalic(line, fontStr, { ...tweaks, dx, dy, align: 'left' });
-      cText.x -= cText.getMeasuredWidth() * (align == 'center' ? .5 : (align == 'right') ? 1 : 0);
+      const llen = (cText.x + cText.getMeasuredWidth() - dx);
+      const offs = llen * (align == 'center' ? .5 : (align == 'right') ? 1 : 0);
+      this.cont.children.slice(nchild).forEach(dObj => dObj.x -= offs);
       dy += nlh!;
     })
     return cText; // last Text added
@@ -60,7 +64,7 @@ export class TextTweaks {
     let dx = tweaks.dx!;   // ASSERT: tweaks.dx set by caller
     frags.forEach((frag, n) => {
       const itweaks = (n % 2 == 0) ? { ...tweaks, dx } : { ...tweaks, dx, style: 'italic' };
-      dx += this.setLineWithGlyphs(frag, fontStr, itweaks);
+      dx = this.setFragWithGlyphs(frag, fontStr, itweaks); // addChild @ tweaks.[dx, dy]
     })
     // ASSERT: split always gives a final Text after any glyph; maybe just Text('')
     return this.cont.children[this.cont.children.length - 1] as Text; //  the last Text frag to be placed.
@@ -69,47 +73,45 @@ export class TextTweaks {
 
   /**
    * Set a SINGLE line (no newlines) filling graphic glyphs.
-   * @param line string to interpolate
+   * @param frag string to interpolate
    * @param fontStr font to use for Text
-   * @param lineh line height in use: for glyph size (and newline)
-   * @param lineno current line within multiline string
-   * @param tweaks
-   * @returns x-coord at end of line
+   * @param tweaks \{ dx, dy, ... } = initial (x-coord, y-coord)
+   * @returns x-coord at end of frag
    */
-  setLineWithGlyphs(line: string, fontStr: string, tweaks: TWEAKS) {
+  setFragWithGlyphs(frag: string, fontStr: string, tweaks: TWEAKS) {
     const glyphRE = tweaks.glyphRE
-    if (glyphRE && line.match(glyphRE)) {
-      let fragT: Text, dx = tweaks?.dx!, dy = tweaks.dy!; // ASSERT: dx, dy are set
-      const frags = line.split(glyphRE);    // ASSERT: this line has a regex match
-      const matches = line.match(glyphRE)!;
+    if (glyphRE && frag.match(glyphRE)) {
+      let fragT: Text, dx = tweaks.dx!, dy = tweaks.dy!; // ASSERT: dx, dy are set
+      const frags = frag.split(glyphRE);    // ASSERT: this line has a regex match
+      const matches = frag.match(glyphRE)!;
       frags?.forEach(frag => {              // ASSERT: frag has no newline and no glyph
         fragT = this.setTextFrag(frag, fontStr, { ...tweaks, dx, align: 'left' });
         dx += fragT.getMeasuredWidth();  // ASSERT: fragT.x = dx
         const fragn = matches?.shift();  // the portion of line that matched glyphRE (eg: '$2')
         if (fragn) {                     // ASSERT: a fragn between or after each fragt
-          dx = this.setGlyph(this.cont, fragT, fragn, dx, dy); // there's a glyphRE, so set it:
+          dx += this.setGlyph(this.cont, fragT, fragn, dx, dy); // there's a glyphRE, so set it:
         }
       })
       return dx;
     }
-    const txt = this.setTextFrag(line, fontStr, tweaks);
-    return txt.x + txt.getMeasuredWidth();
+    const txt = this.setTextFrag(frag, fontStr, tweaks); // @ tweaks[dx, dy]
+    return txt.x + txt.getMeasuredWidth(); // tweaks.dx + frag.width
   }
 
   /**
-   * set a textFrag tweaks[dx,dy,lineno]
-   * @param text a fragment with no newline, no glyph, no font change.
-   * @param fontStr font (size family => dx) for this fragment
-   * @param tweaks {dx, dy, lineno, nlh} and { baseline, align }
+   * Set a textFrag @ tweaks.
+   * @param frag a fragment with no newline, no glyph, no font change.
+   * @param fontStr font (style size weight family => dx) for this fragment
+   * @param tweaks \{ dx, dy, align, baseline }
    * @returns Text which ends at: (rv.x + rv.getMeasuredWidth(), rv.y)
    */
-  setTextFrag(text: string, fontStr: string, tweaks: TWEAKS) {
-    const { dx, dy, baseline, align, nlh } = { dx: 0, dy: 0, ...tweaks }
-    const cText = this.makeText(text, fontStr, tweaks); // make Text object with fontStr (style, weight, size, family)
-    cText.textBaseline = (baseline ?? 'middle'); // 'top' | 'bottom'
-    cText.textAlign = (align ?? 'center');
-    cText.x += dx;
-    cText.y += dy;
+  setTextFrag(frag: string, fontStr: string, tweaks: TWEAKS) {
+    const { dx, dy, align, baseline } = { dx: 0, dy: 0, align: 'left', baseline: 'top', ...tweaks }
+    const cText = this.makeText(frag, fontStr, tweaks); // make Text object with fontStr (style, weight, size, family)
+    cText.textBaseline = baseline; // 'top' | 'middle' | 'bottom'
+    cText.textAlign = align;
+    cText.x = dx;
+    cText.y = dy;
     return this.cont.addChild(cText);
   }
 
@@ -119,7 +121,7 @@ export class TextTweaks {
    * @param tweaks override fontStr { style, weight, size, family }
    * @param xwide max width of Text, shrink fontSize fit. Leave [undefined] to use fontStr as is.
    */
-  makeText(text: string, fontStr: string, tweaks?: TWEAKS) {
+  makeText(text: string, fontStr: string, tweaks: TWEAKS) {
     const { style, weight, size, family, color, xwide } = { ...this.parseFontStr(fontStr), ...tweaks };
     const fontStr1 = F.fontSpec(size, family, weight, style);
     const size1 = (xwide == undefined) ? size : this.shrinkFontForWidth(xwide, text, fontStr1);
@@ -163,13 +165,12 @@ export class TextTweaks {
    * @param trigger the matched text to be replaced with a glyph
    * @param dx x location for glyph (textAlign: left)
    * @param dy y location for glyph (textBaseline: 'top' |middle|bottom)
-   * @param lineh line height of current line (may differ from fragt.lineHeight)
    * @return width consumed by glyph (pre- and post- space)
    */
   setGlyph(cont: Container, fragt: Text, trigger: string, dx = 0, dy = 0) {
     // simply insert trigger text: (in italic bold)
     const gText = this.setTextFrag(trigger, fragt.font, { dx, dy, style: 'italic', weight: 'bold' });
     cont.addChild(gText); // move to proper container
-    return gText.x + gText.getMeasuredWidth();
+    return gText.getMeasuredWidth();
   }
 }
