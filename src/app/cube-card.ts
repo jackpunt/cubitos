@@ -27,7 +27,6 @@ export class CubeCard extends Tile  {
   static coinFont = F.fontSpec(90, `${CubeCard.family}`, 'bold');
   static titleFont = F.fontSpec(36, `${CubeCard.family}`, 'bold');
   static textFont = F.fontSpec(36, `${CubeCard.family}`, 'condensed');
-  static itextFont = F.fontSpec(36, `${CubeCard.family}`, 'italic 470 condensed');
   static get fnames() {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
   }
@@ -103,7 +102,7 @@ export class CubeCard extends Tile  {
     this.desc = { now: '', active: '', run: '', ...desc };
     this.color = desc.color;
     this.cost = desc.cost;
-    this.tweaker = new CubeTweaker(this, { italicFont: CubeCard.itextFont });
+    this.tweaker = new CubeTweaker(this);
     this.addComponents();
   }
 
@@ -258,8 +257,7 @@ export class CubeCard extends Tile  {
 }
 
 class CubeTweaker extends TextTweaks {
-  italicRE = /{(.*?)}/; // capture italic segments 'in-line'
-  italicFont?: string;
+  override italicRE = /{(.*?)}/; // capture italic segments 'in-line'
 
   /**
    * - $= Cube Icon
@@ -274,7 +272,7 @@ class CubeTweaker extends TextTweaks {
    * - $V shield
    * - $H cheese
    */
-  glyphRE = /\$[=f$#Fr!CXVH]/g; //
+  override glyphRE = /\$[=f$#Fr!CXVH]/g; //
 
   static glyphImage: Record<string, string> = {
     '=': 'cube', 'f': 'foot', 'F': 'flag', '$': 'coin', '#': 'credit2', 'r': 'roll',
@@ -295,11 +293,6 @@ class CubeTweaker extends TextTweaks {
     cat: { dx: 25, dy: 18, size: 46 },
     cheese: { dx: 25, dy: 22, size: 40 },
   };
-
-  override setTextTweaks(text: string | Text, fontStr: string, tweaks?: TWEAKS) {
-    tweaks = { glyphRE: this.glyphRE, italicRE: this.italicRE, ...tweaks }
-    return super.setTextTweaks(text, fontStr, tweaks);
-  }
 
   /**
    * Implict tweaks.glyphFunc

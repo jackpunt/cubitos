@@ -7,8 +7,7 @@ export type TWEAKS = {
   style?: string, weight?: string | number, size?: number, family?: string,
   xwide?: number,    // if supplied: shrink fontSize to fit within xwide
   dx?: number, dy?: number, lineno?: number, nlh?: number, // add lead to after/btwn each line.
-  italicRE?: RegExp, // when matched use italicFont on match[1]
-  italicFont?: string, // font to use when italic
+  italicRE?: RegExp, // when matched use style: italic
   glyphRE?: RegExp, // when matched in setTextWithGlyphs, invoke glyphFunc(match, ...)
 };
 
@@ -18,13 +17,13 @@ export type TWEAKS = {
  * override setGlyph() for your glyphRE.
  */
 export class TextTweaks {
+  glyphRE?: RegExp;
+  italicRE?: RegExp;
+
   cont: Container;
-  nparams: Record<string, number>; // cardw, edge
-  sparams: Record<string, string>; // textFont
-  constructor(cont: Container, sparams?: Record<string, string>, nparams?: Record<string, number>) {
+
+  constructor(cont: Container) {
     this.cont = cont;
-    this.sparams = sparams ?? {};
-    this.nparams = nparams ?? {};
   }
 
   /** setTextTweaks [Centered] with Tweaks: { color, dx, dy, baseline, align, nlh, glyphRE }
@@ -59,7 +58,7 @@ export class TextTweaks {
    * @returns the final Text child
    */
   setLineMaybeItalic(line: string, fontStr: string, tweaks: TWEAKS) {
-    const italicRE = tweaks.italicRE;    // ASSERT: italicRE has capture group for the italicised frags
+    const italicRE = this.italicRE;    // ASSERT: italicRE has capture group for the italicised frags
     const frags = (italicRE && line.match(italicRE)) ? line.split(italicRE) : [line];
     let dx = tweaks.dx!;   // ASSERT: tweaks.dx set by caller
     frags.forEach((frag, n) => {
@@ -79,7 +78,7 @@ export class TextTweaks {
    * @returns x-coord at end of frag
    */
   setFragWithGlyphs(frag: string, fontStr: string, tweaks: TWEAKS) {
-    const glyphRE = tweaks.glyphRE
+    const glyphRE = this.glyphRE
     if (glyphRE && frag.match(glyphRE)) {
       let fragT: Text, dx = tweaks.dx!, dy = tweaks.dy!; // ASSERT: dx, dy are set
       const frags = frag.split(glyphRE);    // ASSERT: this line has a regex match
@@ -145,17 +144,24 @@ export class TextTweaks {
     return { style, weight, size, family }
   }
 
+  /** overrideable: used by xwidth(xwide < 0) */
+  get cardw() { return 200 }
+
+  /** overrideable: normalize xwide when negative (for shrinkFontForWidth)*/
+  xwidth(xwide = 0) {
+    return (xwide <= 0) ? (xwide + this.cardw) : xwide;
+  }
   /** reduce font size so longest line of text fits in xwide */
   shrinkFontForWidth(xwide: number, text: string, fontspec: string) {
     const size = F.fontSize(fontspec);
-    if (xwide <= 0) xwide += (this.nparams['cardw'] - 2 * this.nparams['edge']);
+    const xwidth = this.xwidth(xwide);
     const lines = text.split('\n');
     let width = 0;
     lines.forEach(line => {
       const wide = new Text(line, fontspec).getMeasuredWidth();
       width = Math.max(width, wide);
     })
-    return (width <= xwide) ? size : Math.floor(size * xwide / width);
+    return (width <= xwidth) ? size : Math.floor(size * xwidth / width);
   }
 
   /**
