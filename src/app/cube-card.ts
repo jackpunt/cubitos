@@ -1,5 +1,5 @@
-import { C, F, stime } from "@thegraid/common-lib";
-import { CenterText, CircleShape, NamedContainer, RectShape, RectWithDisp, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
+import { C, F } from "@thegraid/common-lib";
+import { CenterText, NamedContainer, RectShape, RectWithDisp, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
 import { Shape, Text, type Bitmap, type Container, type DisplayObject } from "@thegraid/easeljs-module";
 import { AliasLoader, Tile } from "@thegraid/hexlib";
 import { CardShape } from "./card-shape";
@@ -26,16 +26,17 @@ export class CubeCard extends Tile  {
   static nameFont = (`normal 470 condensed 65px ${CubeCard.family}`);
   static coinFont = F.fontSpec(90, `${CubeCard.family}`, 'bold');
   static titleFont = F.fontSpec(36, `${CubeCard.family}`, 'bold');
-  static textFont = F.fontSpec(36, `${CubeCard.family}`, '470 condensed');
+  static textFont = F.fontSpec(36, `${CubeCard.family}`, 'condensed');
   static itextFont = F.fontSpec(36, `${CubeCard.family}`, 'italic 470 condensed');
   static get fnames() {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
   }
+  // initial (...) provide alternate titleBox text
   static cards: CARD[] = [
-    {Aname: 'Red Menace 2', cost: 6, color: 'red', now: '', run: ['($! RUN)$! = 2 $X each.','(RUN [COMPARE $X])MOST $X:\n[Start player $= breaks ties]\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].']},
-    {Aname: 'Red Menace', cost: 5, color: 'red', now: '', run: '(RUN [COMPARE $X])MOST $X:\n[Start player $= breaks ties]\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].'},
-    {Aname: 'Slim Cat', cost: 5, color: 'white', run: 'Gain 1$$.\n\nGain 1 GRAY $= [if possible]\nand gain 2$f'},
-    {Aname: 'Cat Box', cost: 7, color: 'white', now: 'Gain a GREY $=.\n\nRoll ($r) a GREY $= from \nany zone.', run: 'Gain 1 $f per active GREY $=. \n\nLose $f per active GREEN $=.'},
+    {Aname: 'Red Menace 2', cost: 6, color: 'red', now: '', run: ['($! RUN)$! = 2 $X each.','(RUN [COMPARE $X])MOST $X:\n{[Start player $= breaks ties]}\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].']},
+    {Aname: 'Red Menace', cost: 5, color: 'red', now: '', run: '(RUN [COMPARE $X])MOST $X:\n{[Start player $= breaks ties]}\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].'},
+    {Aname: 'Slim Cat', cost: 5, color: 'white', run: 'Gain 1$$.\n\nGain 1 GRAY $= [if possible]\nand gain 2$f.'},
+    {Aname: 'Cat Box', cost: 7, color: 'white', now: 'Gain 1 GRAY $= [not optional].\n\n$r a GREY $= from any zone.', run: 'Gain 1 $f per active WHITE $=. \n\nIF ACTIVE GREEN:\nLose 1 $f per active GREEN $=.\nLose 1 GREEN $=.'},
 
     {Aname: 'Cubiquitous', cost: 9, color: 'purple', now: '', run: 'Gain 1 $f per active PURPLE $=.\n\nGain $f or $$ equal to the cost \nof the bonus you stop on.'},
     {Aname: 'Niña Cubelada', cost: 5, color: 'green', now: '', active: 'If you would bust, use this: \nYou may select 1 GREY $= from \nyour Roll Zone and set it to a face.\nIf you did, you do not bust.\n\nLose that $= at end of round \n[not optional]'},
@@ -47,6 +48,7 @@ export class CubeCard extends Tile  {
     {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a GREY $=.'},
     {Aname: 'Grand Slam', cost: 8, color: 'orange', now: 'Gain 1 $f per active GREY $=, \nuse them immediately.', active: '', run: 'If you have > 4 active GREY $=,\nlose this.'},
     {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -101,7 +103,7 @@ export class CubeCard extends Tile  {
     this.desc = { now: '', active: '', run: '', ...desc };
     this.color = desc.color;
     this.cost = desc.cost;
-    this.tweaker = new CubeTweaker(this);
+    this.tweaker = new CubeTweaker(this, { italicFont: CubeCard.itextFont });
     this.addComponents();
   }
 
@@ -110,7 +112,7 @@ export class CubeCard extends Tile  {
     return new CardShape('lavender', this.color, this.radius, false, 0, 10);
   }
 
-  // TODO: background, with grey rhombus
+  // TODO: background, with grey rhombus pattern
   // image scanned from card (includes dice faces!)
   // Card Name (maybe two lines)
   // Cost (in dual circles, 130px)
@@ -126,21 +128,21 @@ export class CubeCard extends Tile  {
       this.addChild(bmImage);
     }
     // set card name:
-    const y0 = 0 - h * .36; // for baseLine = 'middle'
-    const nameText0 = new CenterText(this.Aname, CubeCard.nameFont, this.tcolor);
+    const name = this.Aname;
+    const nameText0 = new CenterText(name, CubeCard.nameFont, this.tcolor);
+    const nlines = name.split('\n').length;
     const mlh = nameText0.getMeasuredLineHeight();
     const nlh = mlh + CubeCard.fontLead;
-    const tweaks: TWEAKS = { color: this.tcolor, nlh, align: 'left'};
+    const y0 = 0 - h * .36; // for baseLine = 'middle'
+    const dy = y0 - (nlines == 1 ? 0 : mlh / 2);
+
+    const tweaks: TWEAKS = { color: this.tcolor, nlh, align: 'left', dx: x0, dy };
     this.tweaker.cont = this;  // add directly with this.addChild();
-    const nameText = this.tweaker.setTextTweaks(this.Aname, CubeCard.nameFont, tweaks); // addChild(nameText)
-    const nlines = nameText.text.split('\n').length;
-    const dy2 = nlines * nlh;
-    nameText.y = y0 - (nlines == 1 ? 0 : mlh/2);
-    nameText.x = x0;
+    this.tweaker.setTextTweaks(name, CubeCard.nameFont, tweaks); // addChild(nameText)
     // set cost coin:
     const coin = this.makeCoin(x + width - 100, y0);
-    this.addBoxes(nameText.y + dy2);
-    this.addChild(nameText, coin); // titleName, not Tile.nameText
+    this.addBoxes(dy + nlines * nlh, nlh / 2);
+    this.addChild(coin); // titleName, not Tile.nameText
     // this.reCache(); // do not reCache: extends bouds to whole bmImage!
     this.paint(this.color)
   }
@@ -231,11 +233,10 @@ export class CubeCard extends Tile  {
   makeBox(text = 'NOW', y0 = 0, bgColor: string, fontSpec: string, tColor = this.tcolor, dw = .45, strokec = ''): DisplayObject {
     // FIX: If mcolor is 'whitish', then brighten bcolor & tColor = tcolor
     const tText = new Text(text, fontSpec, tColor);
-    const size = F.fontSize(tText.font);
-    const glyphRE = this.tweaker.glyphRE; // red: $! $X
-    const tweaks = { glyphRE, align: 'left', baseline: 'top', font: fontSpec, color: tColor, size, nlh: size + 5 } as TWEAKS;
+    const size = F.fontSize(fontSpec), nlh = size + CubeCard.fontLead;
+    const tweaks = { align: 'left', baseline: 'top', font: fontSpec, color: tColor, size, nlh } as TWEAKS;
     const cont = this.tweaker.cont = new NamedContainer('aBox');
-    const bText = this.tweaker.setTextTweaks(tText, fontSpec, tweaks);
+    this.tweaker.setTextTweaks(tText, fontSpec, tweaks);
       const tb = cont.getBounds();
       const tw = Math.max(tb.width, this.gridSpec.cardw! * dw);
       cont.setBounds(tb.x, tb.y, tw, tb.height);
@@ -257,6 +258,9 @@ export class CubeCard extends Tile  {
 }
 
 class CubeTweaker extends TextTweaks {
+  italicRE = /{(.*?)}/; // capture italic segments 'in-line'
+  italicFont?: string;
+
   /**
    * - $= Cube Icon
    * - $f Foot Icon
@@ -292,21 +296,25 @@ class CubeTweaker extends TextTweaks {
     cheese: { dx: 25, dy: 22, size: 40 },
   };
 
+  override setTextTweaks(text: string | Text, fontStr: string, tweaks?: TWEAKS) {
+    tweaks = { glyphRE: this.glyphRE, italicRE: this.italicRE, ...tweaks }
+    return super.setTextTweaks(text, fontStr, tweaks);
+  }
+
   /**
-   *
+   * Implict tweaks.glyphFunc
    * @param fragt text before the glyph (for metrics)
    * @param trigger match from regex (typically: $<char>)
    * @param linex where next text/char would go
    * @param liney where next text/char would go
    * @param lineh line height (lineHeight + leading) (could effect 'size' of glyph?)
-   * @returns
+   * @returns x-coord at end of glyph
    */
-  override setGlyph(cont: Container, fragt: Text, trigger: string, linex = 0, liney = 0, lineh = fragt.lineHeight): number {
+  override setGlyph(cont: Container, fragt: Text, trigger: string, linex = 0, liney = 0): number {
     const key = trigger[1];
     const name = CubeTweaker.glyphImage[key];
     const params = this.glyphParams[name] ?? {};
-    const { dx, dy, size } = { dx: 0, dy: 0, size: lineh - 2, ...params };
-    const tx = params.tx ?? dx * 2;  // Assert: images is centered
+    const { dx, dy, size } = { dx: 0, dy: 0, size: fragt.getMeasuredHeight(), ...params };
     const aliasLoader = AliasLoader; // for debugger access
     const bmi0 = aliasLoader.loader.getBitmap(name, size);
     const color = fragt.color;
@@ -336,7 +344,7 @@ class CubeTweaker extends TextTweaks {
         break;
     }
 
-    return tx;
+    return bmi.x + dx; // glyph is centered: [-dx...+dx]
   }
 }
 class StencilImage extends NamedContainer {
