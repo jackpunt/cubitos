@@ -7,8 +7,6 @@ export type TWEAKS = {
   style?: string, weight?: string | number, size?: number, family?: string,
   xwide?: number,    // if supplied: shrink fontSize to fit within xwide
   dx?: number, dy?: number, lineno?: number, nlh?: number, // add lead to after/btwn each line.
-  italicRE?: RegExp, // when matched use style: italic
-  glyphRE?: RegExp, // when matched in setTextWithGlyphs, invoke glyphFunc(match, ...)
 };
 
 /**
@@ -17,8 +15,10 @@ export type TWEAKS = {
  * override setGlyph() for your glyphRE.
  */
 export class TextTweaks {
+  /** override to detect and inject glyphs */
   glyphRE?: RegExp;
-  italicRE?: RegExp;
+  /** override to define alternate fonts for /<:f(\d+)>/ */
+  fontFamily: string[] = ['Fishmonger CS', 'SF Compact Rounded', 'Helvetica Neue', 'Nunito'];
 
   cont: Container;
 
@@ -45,7 +45,7 @@ export class TextTweaks {
     let cText!: Text, dy = dy0;
     lines.split('\n').forEach(line => {
       const nchild = this.cont.children.length;
-      cText = this.setLineMaybeItalic(line, fontStr, { ...tweaks, dx, dy, align: 'left' });
+      cText = this.setLineWithFontFrags(line, fontStr, { ...tweaks, dx, dy, align: 'left' });
       const llen = (cText.x + cText.getMeasuredWidth() - dx);
       const offs = llen * (align == 'center' ? .5 : (align == 'right') ? 1 : 0);
       this.cont.children.slice(nchild).forEach(dObj => dObj.x -= offs);
@@ -54,21 +54,34 @@ export class TextTweaks {
     return cText; // last Text added
   }
 
-  /** single line; no glyphs; align: left
+  /**
+   * italic weight family
    * @returns the final Text child
    */
-  setLineMaybeItalic(line: string, fontStr: string, tweaks: TWEAKS) {
-    const italicRE = this.italicRE;    // ASSERT: italicRE has capture group for the italicised frags
-    const frags = (italicRE && line.match(italicRE)) ? line.split(italicRE) : [line];
+  setLineWithFontFrags(line: string, fontStr: string, tweaks: TWEAKS) {
+    const fontRE = /<:(i?\d*f?\d?):(.+?)>/;    // ASSERT: 2 capture groups (spec)(text)
+    const frags = (fontRE && line.match(fontRE)) ? line.split(fontRE) : [line];
     let dx = tweaks.dx!;   // ASSERT: tweaks.dx set by caller
+    const fontTweaks: TWEAKS = {};
     frags.forEach((frag, n) => {
-      const itweaks = (n % 2 == 0) ? { ...tweaks, dx } : { ...tweaks, dx, style: 'italic' };
+      const itweaks: TWEAKS = { ...tweaks, dx };
+      if (n % 3 == 1) {
+        fontTweaks.style = frag.startsWith('i') ? 'italic' : undefined;
+        fontTweaks.weight = frag.match(/\d\d+/)?.[0];
+        const isFam = frag.match(/f(\d)/);
+        fontTweaks.family = isFam ? this.fontFamily[Number.parseInt(isFam[1])] : undefined;
+        return;
+      } else if (n % 3 == 2)  {
+        const { style, weight, family } = fontTweaks;
+        if (style !== undefined) { itweaks.style = style }
+        if (weight !== undefined) { itweaks.weight = weight }
+        if (family !== undefined) { itweaks.family = family }
+      }
       dx = this.setFragWithGlyphs(frag, fontStr, itweaks); // addChild @ tweaks.[dx, dy]
     })
     // ASSERT: split always gives a final Text after any glyph; maybe just Text('')
     return this.cont.children[this.cont.children.length - 1] as Text; //  the last Text frag to be placed.
   }
-
 
   /**
    * Set a SINGLE line (no newlines) filling graphic glyphs.
@@ -79,12 +92,12 @@ export class TextTweaks {
    */
   setFragWithGlyphs(frag: string, fontStr: string, tweaks: TWEAKS) {
     const glyphRE = this.glyphRE
+    let fragT: Text, dx = tweaks.dx!, dy = tweaks.dy!; // ASSERT: dx, dy are set
     if (glyphRE && frag.match(glyphRE)) {
-      let fragT: Text, dx = tweaks.dx!, dy = tweaks.dy!; // ASSERT: dx, dy are set
       const frags = frag.split(glyphRE);    // ASSERT: this line has a regex match
       const matches = frag.match(glyphRE)!;
       frags?.forEach(frag => {              // ASSERT: frag has no newline and no glyph
-        fragT = this.setTextFrag(frag, fontStr, { ...tweaks, dx, align: 'left' });
+        fragT = this.setTextFrag(frag, fontStr, { ...tweaks, dx });
         dx += fragT.getMeasuredWidth();  // ASSERT: fragT.x = dx
         const fragn = matches?.shift();  // the portion of line that matched glyphRE (eg: '$2')
         if (fragn) {                     // ASSERT: a fragn between or after each fragt
@@ -93,8 +106,8 @@ export class TextTweaks {
       })
       return dx;
     }
-    const txt = this.setTextFrag(frag, fontStr, tweaks); // @ tweaks[dx, dy]
-    return txt.x + txt.getMeasuredWidth(); // tweaks.dx + frag.width
+    fragT = this.setTextFrag(frag, fontStr, tweaks); // @ tweaks[dx, dy]
+    return dx + fragT.getMeasuredWidth(); //  tweaks.dx + frag.width
   }
 
   /**

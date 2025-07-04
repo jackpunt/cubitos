@@ -22,10 +22,12 @@ export class CubeCard extends Tile  {
   // static family = 'SF Compact Rounded'; static fontLead = 0;
   // static family = 'Nunito'; static fontLead = 0;
   // static family = 'Futura'; static fontLead = 12; // Futura steps on itsefl..
-  static family = 'Helvetica Neue'; static fontLead = 6;
-  static nameFont = (`normal 470 condensed 65px ${CubeCard.family}`);
-  static coinFont = F.fontSpec(90, `${CubeCard.family}`, 'bold');
-  static titleFont = F.fontSpec(36, `${CubeCard.family}`, 'bold');
+  // static family = 'Helvetica Neue'; static fontLead = 6;
+  static family = 'Fishmonger CS'; static fontLead = 10;
+  static nameFont = (`condensed 600 65px ${CubeCard.family}`); // semibold ?
+  static coinFont = F.fontSpec(90, `${CubeCard.family}`, 'semibold');
+  // static titleFont = F.fontSpec(36, `${CubeCard.family}`, '800 condensed');
+  static titleFont = `36px ${CubeCard.family} Bold`;
   static textFont = F.fontSpec(36, `${CubeCard.family}`, 'condensed');
   static get fnames() {
     return  [... Object.keys(CubeCard.cmap), ... Object.values(CubeTweaker.glyphImage)];
@@ -33,20 +35,20 @@ export class CubeCard extends Tile  {
   // initial (...) provide alternate titleBox text
   static cards: CARD[] = [
     {Aname: 'Red Menace 2', cost: 6, color: 'red', now: '', run: ['($! RUN)$! = 2 $X each.','(RUN [COMPARE $X])MOST $X:\n{[Start player $= breaks ties]}\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].']},
-    {Aname: 'Red Menace', cost: 5, color: 'red', now: '', run: '(RUN [COMPARE $X])MOST $X:\n{[Start player $= breaks ties]}\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].'},
-    {Aname: 'Slim Cat', cost: 5, color: 'white', run: 'Gain 1$$.\n\nGain 1 GRAY $= [if possible]\nand gain 2$f.'},
-    {Aname: 'Cat Box', cost: 7, color: 'white', now: 'Gain 1 GRAY $= [not optional].\n\n$r a GREY $= from any zone.', run: 'Gain 1 $f per active WHITE $=. \n\nIF ACTIVE GREEN:\nLose 1 $f per active GREEN $=.\nLose 1 GREEN $=.'},
+    {Aname: 'Red Menace', cost: 5, color: 'red', now: '', run: '(RUN [COMPARE $X])<:800:MOST> $X:\n<:i:[Start player $= breaks ties]>\n\nGain an ORANGE or YELLOW $=.\n\nLose 1 RED $= [not optional].'},
+    // {Aname: 'Slim Cat', cost: 5, color: 'white', run: 'Gain 1$$.\n\nGain 1 GRAY $= [if possible]\nand gain 2$f.'},
+    // {Aname: 'Cat Box', cost: 7, color: 'white', now: 'Gain 1 GRAY $= [not optional].\n\n$r a GREY $= from any zone.', run: 'Gain 1 $f per active WHITE $=. \n\nIF ACTIVE GREEN:\nLose 1 $f per active GREEN $=.\nLose 1 GREEN $=.'},
 
-    {Aname: 'Cubiquitous', cost: 9, color: 'purple', now: '', run: 'Gain 1 $f per active PURPLE $=.\n\nGain $f or $$ equal to the cost \nof the bonus you stop on.'},
-    {Aname: 'Niña Cubelada', cost: 5, color: 'green', now: '', active: 'If you would bust, use this: \nYou may select 1 GREY $= from \nyour Roll Zone and set it to a face.\nIf you did, you do not bust.\n\nLose that $= at end of round \n[not optional]'},
-    {Aname: 'Mellow Yellow', cost: 7, color: 'yellow', now: 'Gain 1 $# per active GREY $=.', active: '', run: 'Gain a GREY $=.\n\nIf more than 4 active GREY $=,\nlose this.'},
-    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Lose an active GREEN $= (if able).\n\nGain a $= costing < the $= you lost.', run: 'Gain 2$$.\n\nGain $f = cost of the $= you lost.'},
-    {Aname: 'Switch Hitter', cost: 6, color: 'orange', now: '', run: 'Lose 1 NON-GREY $= [not optional]. \n\nGain $f = half the cost of that die.'},
-    {Aname: 'Bone Yard', cost: 3, color: 'brown', now: '', run: 'You may lose a GREY $= from Roll, \nIf you do: \ngain a GREY $= and 1 $f.'},
-    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active GREY $=; \n-1 $f per active GREEN $=.'},
-    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a GREY $=.'},
-    {Aname: 'Grand Slam', cost: 8, color: 'orange', now: 'Gain 1 $f per active GREY $=, \nuse them immediately.', active: '', run: 'If you have > 4 active GREY $=,\nlose this.'},
-    {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
+    // {Aname: 'Cubiquitous', cost: 9, color: 'purple', now: '', run: 'Gain 1 $f per active PURPLE $=.\n\nGain $f or $$ equal to the cost \nof the bonus you stop on.'},
+    // {Aname: 'Niña Cubelada', cost: 5, color: 'green', now: '', active: 'If you would bust, use this: \nYou may select 1 GREY $= from \nyour Roll Zone and set it to a face.\nIf you did, you do not bust.\n\nLose that $= at end of round \n[not optional]'},
+    // {Aname: 'Mellow Yellow', cost: 7, color: 'yellow', now: 'Gain 1 $# per active GREY $=.', active: '', run: 'Gain a GREY $=.\n\nIf more than 4 active GREY $=,\nlose this.'},
+    // {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: 'Lose an active GREEN $= (if able).\n\nGain a $= costing < the $= you lost.', run: 'Gain 2$$.\n\nGain $f = cost of the $= you lost.'},
+    // {Aname: 'Switch Hitter', cost: 6, color: 'orange', now: '', run: 'Lose 1 NON-GREY $= [not optional]. \n\nGain $f = half the cost of that die.'},
+    // {Aname: 'Bone Yard', cost: 3, color: 'brown', now: '', run: 'You may lose a GREY $= from Roll, \nIf you do: \ngain a GREY $= and 1 $f.'},
+    // {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active GREY $=; \n-1 $f per active GREEN $=.'},
+    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: '(NOW)Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a GREY $=.'},
+    // {Aname: 'Grand Slam', cost: 8, color: 'orange', now: 'Gain 1 $f per active GREY $=, \nuse them immediately.', active: '', run: 'If you have > 4 active GREY $=,\nlose this.'},
+    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
 
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -121,26 +123,25 @@ export class CubeCard extends Tile  {
     const h = this.gridSpec.cardh!;
     const bmImage = AliasLoader.loader.getBitmap(this.color, this.gridSpec.cardw!); // scaled to fit cardw
     const { x, y, height, width } = this.baseShape.getBounds();
-    const x0 = this.x0 = x + width * .44;
+    const x0 = this.x0 = x + width * .455;
     if (bmImage) {
       bmImage.x += 0; // can fudge if you want to see the cropped bleed graphics
       this.addChild(bmImage);
     }
     // set card name:
     const name = this.Aname;
-    const nameText0 = new CenterText(name, CubeCard.nameFont, this.tcolor);
     const nlines = name.split('\n').length;
-    const mlh = nameText0.getMeasuredLineHeight();
+    const mlh = new Text(name, CubeCard.nameFont).getMeasuredLineHeight();
     const nlh = mlh + CubeCard.fontLead;
-    const y0 = 0 - h * .36; // for baseLine = 'middle'
-    const dy = y0 - (nlines == 1 ? 0 : mlh / 2);
+    const y0 = 0 - h * .36; // center of coin
+    const dy = y0 - nlines * nlh / 2;
 
     const tweaks: TWEAKS = { color: this.tcolor, nlh, align: 'left', dx: x0, dy };
     this.tweaker.cont = this;  // add directly with this.addChild();
     this.tweaker.setTextTweaks(name, CubeCard.nameFont, tweaks); // addChild(nameText)
     // set cost coin:
     const coin = this.makeCoin(x + width - 100, y0);
-    this.addBoxes(dy + nlines * nlh, nlh / 2);
+    this.addBoxes(dy + nlines * nlh + nlh / 2, nlh / 2);
     this.addChild(coin); // titleName, not Tile.nameText
     // this.reCache(); // do not reCache: extends bouds to whole bmImage!
     this.paint(this.color)
@@ -169,13 +170,12 @@ export class CubeCard extends Tile  {
       const content = special ? special[2] : txt;
       const tbox = this.makeTitleBox(title, y0) as RectWithDisp;
       const cbox = this.makeContentBox(content, y0);
-      // overlap corner radius, lead, descenders (approx)
-      const overlap = this.corner + 2 + (F.fontSize(CubeCard.titleFont) / 9);
-      cbox.y = tbox.y + tbox.getBounds().height - overlap;
+      const tb = tbox.getBounds();
+      cbox.y = tbox.y + tb.y + tb.height;
       cbox.y -= cbox.getBounds().y; // when glyph causes bounds to grow up...
       this.addChild(tbox, cbox);
       y0 = cbox.y + cbox.getBounds().height + ygap;
-      // In case glyph or title have descenders, extend southern border:
+      // extend southern border to create overlap
       tbox.borders = [undefined, undefined, undefined, 15];
       tbox.setBounds(undefined, 0, 0, 0);
       tbox.paint(undefined, true);
@@ -257,7 +257,6 @@ export class CubeCard extends Tile  {
 }
 
 class CubeTweaker extends TextTweaks {
-  override italicRE = /{(.*?)}/; // capture italic segments 'in-line'
 
   /**
    * - $= Cube Icon
