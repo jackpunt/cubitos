@@ -59,23 +59,29 @@ export class TextTweaks {
    * @returns the final Text child
    */
   setLineWithFontFrags(line: string, fontStr: string, tweaks: TWEAKS) {
-    const fontRE = /<:(i?\d*f?\d?):(.+?)>/;    // ASSERT: 2 capture groups (spec)(text)
+    const fontRE = /<:((i?\d*f?\d?)):(.+?)>|<:([A-Za-z]*)/;    // ASSERT: 2 capture groups (spec)(text)
     const frags = (fontRE && line.match(fontRE)) ? line.split(fontRE) : [line];
     let dx = tweaks.dx!;   // ASSERT: tweaks.dx set by caller
-    const fontTweaks: TWEAKS = {};
+    const fontTweaks: TWEAKS = {}, nr = 5;
     frags.forEach((frag, n) => {
       const itweaks: TWEAKS = { ...tweaks, dx };
-      if (n % 3 == 1) {
+      if (frag == undefined) return;
+      if (n % nr == 1 ) return;
+      if (n % nr == 2) {
         fontTweaks.style = frag.startsWith('i') ? 'italic' : undefined;
         fontTweaks.weight = frag.match(/\d\d+/)?.[0];
         const isFam = frag.match(/f(\d)/);
         fontTweaks.family = isFam ? this.fontFamily[Number.parseInt(isFam[1])] : undefined;
         return;
-      } else if (n % 3 == 2)  {
+      }
+      else if (n % nr == 3)  {
         const { style, weight, family } = fontTweaks;
         if (style !== undefined) { itweaks.style = style }
         if (weight !== undefined) { itweaks.weight = weight }
         if (family !== undefined) { itweaks.family = family }
+      }
+      else if (n % nr == 4) {
+        itweaks.weight = 'bold';
       }
       dx = this.setFragWithGlyphs(frag, fontStr, itweaks); // addChild @ tweaks.[dx, dy]
     })
