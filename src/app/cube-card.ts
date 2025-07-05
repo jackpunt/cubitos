@@ -23,7 +23,7 @@ export class CubeCard extends Tile  {
   // static family = 'Nunito'; static fontLead = 0;
   // static family = 'Futura'; static fontLead = 12; // Futura steps on itsefl..
   // static family = 'Helvetica Neue'; static fontLead = 6;
-  static family = 'Fishmonger CS'; static fontLead = 5;
+  static family = 'Fishmonger CS'; static fontLead = 13;
   static nameFont = (`condensed 500 65px ${CubeCard.family}`); // semibold ?
   static coinFont = F.fontSpec(80, `${CubeCard.family}`, 'bold');
   // static titleFont = F.fontSpec(36, `${CubeCard.family}`, '800 condensed');
@@ -44,8 +44,8 @@ export class CubeCard extends Tile  {
     {Aname: 'Mellow Yellow', cost: 7, color: 'yellow', now: 'Gain 1 $# per active <:GREY $=.', active: '', run: 'Gain a <:GREY $=.\n\nIf more than 4 active <:GREY $=,\nlose this.'},
     {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: '<:800:IF ACTIVE GREEN $=:>\nLose 1 <:GREEN $=.\n\nGain a $= costing < the $= you lost.', run: 'Gain 2$$.\n\nGain $f = cost of the $= you lost.'},
     {Aname: 'Switch Hitter', cost: 6, color: 'orange', now: '', run: 'Lose 1 <:NON-GREY $= [not optional]. \n\nGain $f = half the cost of that die.'},
-    {Aname: 'Bone Yard', cost: 3, color: 'brown', now: '', run: 'You may lose a <:GREY $= from Roll, \nIf you do: \ngain a <:GREY $= and 1 $f.'},
-    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active <:GREY $=; \n-1 $f per active <:GREEN $=.'},
+    {Aname: 'Bone Yard', cost: 3, color: 'brown', now: '', run: 'You may lose a <:GREY $= from your\nRoll zone, If you do: \ngain a <:GREY $= and 1 $f.'},
+    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active <:GREY $=. \n-1 $f per active <:GREEN $=.\n-2 $f per active <:PURPLE $=.'},
     {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a <:GREY $=.'},
     {Aname: 'Grand Slam', cost: 8, color: 'orange', now: 'Gain 1 $f per active <:GREY $=, \nuse them immediately.', active: '', run: 'If you have > 4 active <:GREY $=,\nlose this.'},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -232,7 +232,8 @@ export class CubeCard extends Tile  {
   makeBox(text = 'NOW', y0 = 0, bgColor: string, fontSpec: string, tColor = this.tcolor, dw = .45, strokec = ''): DisplayObject {
     // FIX: If mcolor is 'whitish', then brighten bcolor & tColor = tcolor
     const tText = new Text(text, fontSpec, tColor);
-    const size = F.fontSize(fontSpec), nlh = size + CubeCard.fontLead;
+    const size = F.fontSize(fontSpec);
+    const nlh = tText.getMeasuredLineHeight() + CubeCard.fontLead;
     const tweaks = { align: 'left', baseline: 'top', font: fontSpec, color: tColor, size, nlh } as TWEAKS;
     const cont = this.tweaker.cont = new NamedContainer('aBox');
     this.tweaker.setTextTweaks(tText, fontSpec, tweaks);

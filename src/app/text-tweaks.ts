@@ -49,7 +49,9 @@ export class TextTweaks {
       const llen = (cText.x + cText.getMeasuredWidth() - dx);
       const offs = llen * (align == 'center' ? .5 : (align == 'right') ? 1 : 0);
       this.cont.children.slice(nchild).forEach(dObj => dObj.x -= offs);
-      dy += nlh!;
+      const mlh = cText.getMeasuredHeight();
+      const incy = (line ? (nlh ?? mlh) : mlh);
+      dy += incy;
     })
     return cText; // last Text added
   }
@@ -59,28 +61,28 @@ export class TextTweaks {
    * @returns the final Text child
    */
   setLineWithFontFrags(line: string, fontStr: string, tweaks: TWEAKS) {
-    const fontRE = /<:((i?\d*f?\d?)):(.+?)>|<:([A-Za-z]*)/;    // ASSERT: 2 capture groups (spec)(text)
+    const fontRE = /<:(i?\d*f?\d?):(.+?)>|<:([A-Za-z]*)/;    // ASSERT: 3 capture groups (spec)(text)(bold)
     const frags = (fontRE && line.match(fontRE)) ? line.split(fontRE) : [line];
     let dx = tweaks.dx!;   // ASSERT: tweaks.dx set by caller
-    const fontTweaks: TWEAKS = {}, nr = 5;
+    const fontTweaks: TWEAKS = {}, nr = 4;
     frags.forEach((frag, n) => {
       const itweaks: TWEAKS = { ...tweaks, dx };
       if (frag == undefined) return;
-      if (n % nr == 1 ) return;
-      if (n % nr == 2) {
+      // if (n % nr == 1 ) return;
+      if (n % nr == 1) {
         fontTweaks.style = frag.startsWith('i') ? 'italic' : undefined;
         fontTweaks.weight = frag.match(/\d\d+/)?.[0];
         const isFam = frag.match(/f(\d)/);
         fontTweaks.family = isFam ? this.fontFamily[Number.parseInt(isFam[1])] : undefined;
         return;
       }
-      else if (n % nr == 3)  {
+      else if (n % nr == 2)  {
         const { style, weight, family } = fontTweaks;
         if (style !== undefined) { itweaks.style = style }
         if (weight !== undefined) { itweaks.weight = weight }
         if (family !== undefined) { itweaks.family = family }
       }
-      else if (n % nr == 4) {
+      else if (n % nr == 3) {
         itweaks.weight = 'bold';
       }
       dx = this.setFragWithGlyphs(frag, fontStr, itweaks); // addChild @ tweaks.[dx, dy]
