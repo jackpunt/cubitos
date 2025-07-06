@@ -14,7 +14,7 @@ export class TileExporter extends TileExporterLib {
   /** for home printer 8x10 @ 300dpi = 2400 x 3000 */
   static euroPoker2: GridSpec = {
     width: 2400, height: 3000, nrow: 4, ncol: 2, cardw: 1040, cardh: 734, double: false,
-    x0: 60 + 1040/2, y0: 25 + 734/2, delx: 1122.5, dely: 734, bleed: 0,
+    x0: 60 + 1040/2, y0: 25 + 734/2, delx: 1122.5, dely: 734, bleed: 0, bgColor: 'white',
   }
 
   override makeImagePages() {
