@@ -34,21 +34,21 @@ export class CubeCard extends Tile  {
   }
   // initial (...) provide alternate titleBox text
   static cards: CARD[] = [
+    {Aname: 'Thin Cat', cost: 5, color: 'white', run: 'Gain 1$$.\n\nGain 1 <:GRAY $= [if possible]\nand gain 2$f.'},
+    {Aname: 'Cubiquitous', cost: '9*', color: 'purple', now: '', run: ['Gain 1 $f per active <:PURPLE $=.\n\nIf your Move step ends on a \nshortcut, you take it at no cost.','(* Cost)Cost is 9 plus 2 per <:PURPLE $=\nyou already have.']},
+    {Aname: 'Cat Box', cost: 7, color: 'white', now: 'Gain 1 <:GRAY $= [not optional].\n\n$r a <:GREY $= from any zone.', run: 'Gain 2 $f.\n\n<:800:IF ACTIVE GREEN:>\nLose 1 $f per active <:GREEN $=.\nLose 1 <:GREEN $=.'},
     {Aname: 'Red Menace II', cost: 6, color: 'red', now: '', run: ['($! RUN)$! = 2 $X each.','(RUN [COMPARE $X])<:MOST $X:\n<:i:[Start player $= breaks ties]>\n\nGain an <:ORANGE or <:YELLOW $=.\n\nLose 1 <:RED $= [not optional].']},
     // {Aname: 'Red Menace', cost: 5, color: 'red', now: '', run: '(RUN [COMPARE $X])<:MOST $X:\n<:i:[Start player $= breaks ties]>\n\nGain an <:ORANGE or <:YELLOW $=.\n\nLose 1 <:RED $= [not optional].'},
-    {Aname: 'Thin Cat', cost: 5, color: 'white', run: 'Gain 1$$.\n\nGain 1 <:GRAY $= [if possible]\nand gain 2$f.'},
-    {Aname: 'Cat Box', cost: 7, color: 'white', now: 'Gain 1 <:GRAY $= [not optional].\n\n$r a <:GREY $= from any zone.', run: 'Gain 1 $f per active <:WHITE $=. \n\n<:800:IF ACTIVE GREEN:>\nLose 1 $f per active <:GREEN $=.\nLose 1 <:GREEN $=.'},
 
-    {Aname: 'Cubiquitous', cost: '9*', color: 'purple', now: '', run: ['Gain 1 $f per active <:PURPLE $=.\n\nIn your Move step, if you stop \non a bonus you get it at no cost.','(* Cost)Cost is 9 plus 2 per <:PURPLE $=\nyou already have.']},
-    {Aname: 'Niña Cubelada', cost: 5, color: 'green', now: '', active: 'If you would bust, use this: \nYou may select 1 <:GREY $= from \nyour Roll Zone and set it to a face.\nIf you did, you do not bust.\n\nLose that $= at end of round \n[not optional]'},
-    // {Aname: 'Mellow Yellow', cost: 7, color: 'yellow', now: 'Gain 1 $# per active <:GREY $=.', active: '', run: 'Gain a <:GREY $=.\n\nIf more than 4 active <:GREY $=,\nlose this.'},
-    // {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: '<:800:IF ACTIVE GREEN $=:>\nLose 1 <:GREEN $=.\n\nGain a $= costing < the $= you lost.', run: 'Gain 2$$.\n\nGain $f = cost of the $= you lost.'},
+    {Aname: 'Mellow Yellow', cost: 7, color: 'yellow', now: 'Gain 1 $# per active <:GREY $=.', active: '', run: 'Gain a <:GREY $=.\n\nIf more than 4 active <:GREY $=,\nlose this.'},
+    {Aname: 'Bone Yard', cost: 3, color: 'brown', now: 'Move a <:GREY $= from Roll Zone to\nyour Active Zone, setting it used.', run: 'If that <:GREY $= is used, Gain 2 $f.\n\nLose this $= [not optional].'},
+    {Aname: 'Yellow Card', cost: 7, color: 'yellow', now: '<:800:IF ACTIVE GREEN $=:>\nLose 1 <:GREEN $=.\n\nGain a $= costing less than \nthe <:GREEN $= you lost.', run: 'Gain 2$$.\n\nGain $f equal to the cost of the \n<:GREEN $= you lost.'},
+    {Aname: 'Dog Gone', cost: 3, color: 'brown', now: 'Discard all your <:GREY $=.\n\n+3 $r.', run: 'Gain 1$$.\n\nLose this $= [not optional]'},
+    {Aname: 'Niña Cubelada', cost: 5, color: 'green', now: '', active: 'If you would bust, use this: \nYou may select 1 <:GREY $= from \nyour Roll Zone and set it to a face.\nIf you did, you do not bust.\n\nLose that $= at end of round \n[not optional].'},
     // {Aname: 'Switch Hitter', cost: 6, color: 'orange', now: '', run: 'Lose 1 <:NON-GREY $= [not optional]. \n\nGain $f = half the cost of that die.'},
-    // {Aname: 'Bone Yard', cost: 3, color: 'brown', now: '', run: 'You may lose a <:GREY $= from your\nRoll zone, If you do: \ngain a <:GREY $= and 1 $f.'},
-    {Aname: 'White Card', cost: 6, color: 'white', now: '', run: '+1 $f per active <:GREY $=. \n-1 $f per active <:GREEN $=.\n-2 $f per active <:PURPLE $=.'},
-    {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a <:GREY $=.'},
+    {Aname: 'Finicky Cat', cost: 6, color: 'white', now: '', run: 'Gain 1 $f per active <:GREY $=.\n\nLose 1 $f per active <:GREEN $=.\n\nLose 2 $f per active <:PURPLE $=.'},
+    // {Aname: 'Chilly\nMcChillster', cost: 1, color: 'blue', now: 'Gain 2 $f: these $f may be \nused to enter water spaces.', run: 'Lose a <:GREY $=.'},
     // {Aname: 'Grand Slam', cost: 8, color: 'orange', now: 'Gain 1 $f per active <:GREY $=, \nuse them immediately.', active: '', run: 'If you have > 4 active <:GREY $=,\nlose this.'},
-    // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
 
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
     // {Aname: 'Card Name', cost: 1, color: '', now: '', run: ''},
@@ -80,7 +80,7 @@ export class CubeCard extends Tile  {
     green: 'rgb(51,193,69)',
     blue: 'rgb(112, 153, 227)',
     purple:'rgb(128,39,188)',// '0x7e27bc',
-    brown: 'rgb(192,134,50)',
+    brown: 'rgb(166, 128, 50)',
     white: 'rgb(198, 197, 205)',
   } as Record<string, string>;
 
