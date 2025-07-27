@@ -64,7 +64,7 @@
             },
             "development": {
               "port": 4211,
-              "buildTarget": "columns:build:development"
+              "buildTarget": "cubitos:build:development"
             }
           },
           "defaultConfiguration": "development"

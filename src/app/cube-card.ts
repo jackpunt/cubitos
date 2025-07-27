@@ -123,7 +123,7 @@ export class CubeCard extends Tile  {
     const h = this.gridSpec.cardh!;
     const bmImage = AliasLoader.loader.getBitmap(this.color, this.gridSpec.cardw!); // scaled to fit cardw
     const { x, y, height, width } = this.baseShape.getBounds();
-    const x0 = this.x0 = x + width * .455;
+    const x0 = this.x0 = x + width * .455; // where to position Graphics to right of image
     if (bmImage) {
       bmImage.x += 0; // can fudge if you want to see the cropped bleed graphics
       this.addChild(bmImage);
