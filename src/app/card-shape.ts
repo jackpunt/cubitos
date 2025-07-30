@@ -1,29 +1,30 @@
 import { C } from "@thegraid/common-lib";
 import { RectShape } from "@thegraid/easeljs-lib";
-import { H, TP } from "@thegraid/hexlib";
 
+// a 3.5 x 2.5 RoundedRect
 export class CardShape extends RectShape {
-  /** => TP.hexRad * H.sqrt3; for current value of TP.hexRad */
-  static get onScreenRadius() { return TP.hexRad * H.sqrt3 };
+  /** override to set size of your card (750px) */
+  static get defaultSize() { return 750 };
 
-  radius!: number;
+  size: number;
 
   /**
    * Modified RectShape: place border stroke inside the WH perimeter.
    * @param fillc base color of card
    * @param strokec [C.grey64] supply '' for no stroke
-   * @param rad [CardShape.onScreenRadius] size of shorter side [longer is (rad * 1.4)]
+   * @param size [CardShape.defaultSize] size of shorter side OR scale from defaultSize [0..3]
    * @param portrait [false] height is shorter; true -> width is shorter
    * @param ss [rad * .04] StrokeSize for outer border.
    * @param rr [max(w,h) * .05] rounded corner radius
    */
-  constructor(fillc = 'lavender', strokec = C.grey64, rad = CardShape.onScreenRadius, portrait = false, ss?: number, rr?: number) {
-    if (rad <= 1) rad = rad * CardShape.onScreenRadius;
-    const s = ss ?? rad * .04;
+  constructor(fillc = 'lavender', strokec = C.grey64, size = CardShape.defaultSize, portrait = false, ss?: number, rr?: number) {
+    if (size <= 3) size = size * CardShape.defaultSize; // scale down for small size!
+    const s = ss ?? size * .04;
     const a = 3.5 / 2.5; // aspect: length of long side relative to short side = 1.4
-    const w = (portrait ? rad : rad * a) - 2 * s, h = (portrait ? rad * a : rad) - 2 * s;
+    const w = (portrait ? size : size * a) - 2 * s;
+    const h = (portrait ? size * a : size) - 2 * s;
     const r = rr ?? Math.max(h, w) * .05;
     super({ x: -w / 2, y: -h / 2, w, h, r, s }, fillc, strokec);
-    this.radius = rad;
+    this.size = size;
   }
 }

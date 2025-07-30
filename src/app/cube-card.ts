@@ -1,7 +1,7 @@
 import { C, F } from "@thegraid/common-lib";
-import { CenterText, NamedContainer, RectShape, RectWithDisp, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
+import { AliasLoader, CenterText, NamedContainer, RectShape, RectWithDisp, type CountClaz, type Paintable } from "@thegraid/easeljs-lib";
 import { Shape, Text, type Bitmap, type Container, type DisplayObject } from "@thegraid/easeljs-module";
-import { AliasLoader, Tile } from "@thegraid/hexlib";
+import { Tile } from "@thegraid/hexlib";
 import { CardShape } from "./card-shape";
 import { TextTweaks, type TWEAKS } from "./text-tweaks";
 import { TileExporter } from "./tile-exporter";

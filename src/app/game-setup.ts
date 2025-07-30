@@ -1,17 +1,11 @@
 import { stime, type Constructor } from '@thegraid/common-lib';
-import { AliasLoader, GameSetup as GameSetupLib, Hex2, HexMap, MapCont, Scenario as Scenario0, Table, Tile, TP, type Hex } from '@thegraid/hexlib';
-// import { CardShape } from './card-shape';
+import { AliasLoader } from '@thegraid/easeljs-lib';
+import { GameSetup as GameSetupLib, Hex2, HexMap, MapCont, Scenario as Scenario0, Table, Tile, TP, type Hex } from '@thegraid/hexlib';
 
-import { TileExporter } from './tile-exporter';
 import { CubeCard } from './cube-card';
+import { TileExporter } from './tile-exporter';
 
-/** returns an Array filled with n Elements: [0 .. n-1] or [dn .. dn+n-1] or [f(0) .. f(n-1)] */
-export function arrayN(n: number, nf: number | ((i: number) => number) = 0) {
-  const fi = (typeof nf === 'number') ? (i: number) => (i + nf) : nf;
-  return Array.from(Array(n), (_, i) => fi(i))
-}
-
-type Params = Record<string, any>; // until hexlib supplies
+type Params = Record<string, any>; // until common-lib supplies
 export interface Scenario extends Scenario0 {
   nPlayers?: number;
 };
@@ -40,7 +34,7 @@ class NullGameSetup extends GameSetupLib {
     super.startup(scenario);
     Tile.gamePlay = this.gamePlay;
     this.clickButton('makePage'); // app.component.html
-    setTimeout(() => this.setScale('.6'), 300);
+    setTimeout(() => this.setScale('.3'), 300);
   }
 
   setScale(newScale: string) {
@@ -50,7 +44,7 @@ class NullGameSetup extends GameSetupLib {
 
   clickButton(id: string) {
     const anchor = document.getElementById(id) as HTMLAnchorElement;
-    anchor?.onclick?.call(window, {} as any); // no MouseEvent, its not used
+    anchor?.onclick?.call(window, {} as any); // no MouseEvent, its not used; -> TileExporter.makeImagePages()
   }
   override makeHexMap(
     hexMC: Constructor<HexMap<Hex>> = HexMap,
