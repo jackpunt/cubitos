@@ -14,7 +14,7 @@ import { StageComponent } from './stage/stage.component';
 export class AppComponent {
   //title = 'cubitos';
   timestamp = `${new Date().toLocaleTimeString('en-US')}`;
-  linkUrl = 'https://docs.google.com/document/d/109RBOLeDE0yhKDTgoVcWnJsUCzC3blE6XaKuF_LLsb4/view';
+  linkUrl = 'https://github.com/jackpunt/cubitos?tab=readme-ov-file#cubitos';
   linkName!: string;
 
   constructor(private titleService: Title) {
